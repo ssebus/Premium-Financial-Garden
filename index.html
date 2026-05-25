@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bąbelkowy Ogród Finansowy</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+<style>
+
+html,body{
+margin:0;
+padding:0;
+overflow-x:hidden;
+overflow-y:auto;
+touch-action:auto;
+-webkit-overflow-scrolling:touch;
+}
+
+body{
+background:linear-gradient(135deg,#dff7ff,#ffffff,#eafff2);
+min-height:100vh;
+font-family:sans-serif;
+}
+
+input,
+textarea,
+select,
+button{
+pointer-events:auto;
+touch-action:auto;
+}
+
+@keyframes floatBubble{
+0%{transform:translateY(0px);}
+50%{transform:translateY(-8px);}
+100%{transform:translateY(0px);}
+}
+
+.bubbleAnim{
+animation:floatBubble 4s infinite ease-in-out;
+}
+
+@keyframes rotateWave{
+0%{transform:rotate(0deg);}
+100%{transform:rotate(360deg);}
+}
+
+.wave{
+animation:rotateWave 8s linear infinite;
+}
+
+@keyframes rise{
+0%{
+transform:translateY(0px) scale(.3);
+opacity:0;
+}
+50%{
+opacity:.8;
+}
+100%{
+transform:translateY(-180px) scale(1.2);
+opacity:0;
+}
+}
+
+.colorBubble{
+position:absolute;
+border-radius:9999px;
+animation:rise linear infinite;
+}
+
+</style>
+</head>
+
+<body class="flex items-center justify-center p-4">
+
+<div class="bg-white w-full max-w-md h-[880px] rounded-[40px] shadow-2xl overflow-hidden relative flex flex-col">
+
+<!-- HEADER -->
+
+<div class="bg-gradient-to-r from-cyan-400 to-emerald-400 p-5 flex justify-between items-center text-white">
+
+<div>
+
+<h1 class="font-black text-sm">
+🫧 BĄBELKOWY OGRÓD
+</h1>
+
+<p class="text-[10px] opacity-80">
+System Finansowy
+</p>
+
+</div>
+
+<button onclick="toggleMenu()"
+class="text-2xl">
+☰
+</button>
+
+</div>
+
+<!-- MENU -->
+
+<div id="menu"
+class="hidden absolute top-0 left-0 z-50 bg-white w-64 h-full shadow-2xl p-5 overflow-y-auto">
+
+<div class="flex justify-between items-center mb-5">
+
+<h2 class="font-black">
+MENU
+</h2>
+
+<button onclick="toggleMenu()">
+✕
+</button>
+
+</div>
+
+<div class="space-y-2">
+
+<button onclick="showView('main')"
+class="w-full bg-cyan-50 p-3 rounded-xl text-left font-bold">
+
+🫧 Oszczędności
+
+</button>
+
+<button onclick="showView('garden')"
+class="w-full bg-emerald-50 p-3 rounded-xl text-left font-bold">
+
+🌱 Ogród
+
+</button>
+
+<button onclick="showView('history')"
+class="w-full bg-slate-100 p-3 rounded-xl text-left font-bold">
+
+📜 Historia
+
+</button>
+
+</div>
+
+</div>
+
+<!-- MAIN -->
+
+<div id="view-main"
+class="flex-1 overflow-y-auto p-5 space-y-5">
+
+<!-- BALANCE -->
+
+<div class="bg-white border-2 border-cyan-100 rounded-3xl p-5 shadow">
+
+<p class="text-[10px] uppercase font-bold text-slate-400">
+Wolne środki
+</p>
+
+<h2 class="text-4xl font-black font-mono mt-1">
+<span id="balanceText">0.00</span> €
+</h2>
+
+<button onclick="openATM()"
+class="w-full mt-4 bg-slate-900 text-white py-3 rounded-xl font-black text-xs">
+
+🏧 Wpłać / Wypłać
+
+</button>
+
+</div>
+
+<!-- GOALS -->
+
+<div class="flex justify-between items-center">
+
+<h3 class="font-black text-xs uppercase">
+Cele oszczędnościowe
+</h3>
+
+<button onclick="openGoalModal()"
+class="bg-cyan-100 text-cyan-700 px-3 py-2 rounded-full text-xs font-bold">
+
++ Cel
+
+</button>
+
+</div>
+
+<div id="goalsContainer"
+class="space-y-4">
+
+</div>
+
+</div>
+
+<!-- GARDEN -->
+
+<div id="view-garden"
+class="hidden flex-1 overflow-y-auto p-5">
+
+<div class="bg-blue-50 border border-blue-200 rounded-2xl p-4 flex justify-between items-center">
+
+<div>
+
+<h3 class="font-black text-xs">
+💧 Woda
+</h3>
+
+<p class="text-[10px] text-slate-500">
+Podlewaj rośliny
+</p>
+
+</div>
+
+<div class="text-2xl font-black text-blue-500">
+<span id="waterText">0</span>
+</div>
+
+</div>
+
+<div class="grid grid-cols-2 gap-4 mt-5">
+
+<div onclick="clickPlant(0)"
+class="bg-white border rounded-3xl h-48 p-4 flex flex-col items-center justify-center text-center">
+
+<div id="plantEmoji0"
+class="text-5xl">
+🟤
+</div>
+
+<div id="plantName0"
+class="text-xs font-bold mt-2">
+Pusta ziemia
+</div>
+
+<div class="w-full bg-slate-100 h-2 rounded-full mt-3 overflow-hidden">
+
+<div id="plantBar0"
+class="bg-emerald-400 h-full w-0">
+</div>
+
+</div>
+
+</div>
+
+<div onclick="clickPlant(1)"
+class="bg-white border rounded-3xl h-48 p-4 flex flex-col items-center justify-center text-center">
+
+<div id="plantEmoji1"
+class="text-5xl">
+🟤
+</div>
+
+<div id="plantName1"
+class="text-xs font-bold mt-2">
+Pusta ziemia
+</div>
+
+<div class="w-full bg-slate-100 h-2 rounded-full mt-3 overflow-hidden">
+
+<div id="plantBar1"
+class="bg-emerald-400 h-full w-0">
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- HISTORY -->
+
+<div id="view-history"
+class="hidden flex-1 overflow-y-auto p-5">
+
+<h2 class="font-black text-sm mb-4">
+📜 Historia
+</h2>
+
+<div id="historyContainer"
+class="space-y-2">
+
+</div>
+
+</div>
+
+<!-- ATM -->
+
+<div id="atmModal"
+class="hidden absolute inset-0 bg-black/40 flex items-end">
+
+<div class="bg-white w-full rounded-t-[35px] p-6 space-y-4">
+
+<div class="flex justify-between items-center">
+
+<h2 class="font-black">
+🏧 Bankomat
+</h2>
+
+<button onclick="closeATM()">
+✕
+</button>
+
+</div>
+
+<select id="atmType"
+class="w-full p-3 rounded-xl border">
+
+<option value="deposit">
+Wpłata
+</option>
+
+<option value="withdraw">
+Wypłata
+</option>
+
+</select>
+
+<input id="atmAmount"
+type="number"
+placeholder="0.00"
+class="w-full p-4 rounded-xl border text-center text-2xl font-black">
+
+<input id="atmReason"
+type="text"
+placeholder="Opis np. jedzenie"
+class="w-full p-3 rounded-xl border">
+
+<button onclick="confirmATM()"
+class="w-full bg-cyan-400 text-white py-4 rounded-xl font-black">
+
+Zatwierdź
+
+</button>
+
+</div>
+
+</div>
+
+<!-- GOAL MODAL -->
+
+<div id="goalModal"
+class="hidden absolute inset-0 bg-black/40 flex items-center justify-center p-5">
+
+<div class="bg-white rounded-3xl p-5 w-full space-y-4">
+
+<h2 class="font-black">
+🎯 Nowy cel
+</h2>
+
+<input id="goalName"
+type="text"
+placeholder="Nazwa celu"
+class="w-full p-3 rounded-xl border">
+
+<input id="goalTarget"
+type="number"
+placeholder="Kwota"
+class="w-full p-3 rounded-xl border">
+
+<button onclick="createGoal()"
+class="w-full bg-emerald-400 text-white py-3 rounded-xl font-black">
+
+Stwórz
+
+</button>
+
+</div>
+
+</div>
+
+<script>
+
+let storage={
+balance:0,
+water:0,
+goals:[],
+history:[],
+garden:[
+{planted:false,name:'',emoji:'',progress:0},
+{planted:false,name:'',emoji:'',progress:0}
+]
+};
+
+function save(){
+localStorage.setItem(
+'bubbleGarden',
+JSON.stringify(storage)
+);
+}
+
+function load(){
+
+const data=
+localStorage.getItem('bubbleGarden');
+
+if(data){
+
+storage=
+JSON.parse(data);
+
+}
+
+}
+
+load();
+
+function toggleMenu(){
+
+document.getElementById('menu')
+.classList.toggle('hidden');
+
+}
+
+function showView(view){
+
+document.getElementById('view-main')
+.classList.add('hidden');
+
+document.getElementById('view-garden')
+.classList.add('hidden');
+
+document.getElementById('view-history')
+.classList.add('hidden');
+
+document.getElementById('view-'+view)
+.classList.remove('hidden');
+
+toggleMenu();
+
+render();
+
+}
+
+function render(){
+
+document.getElementById('balanceText')
+.innerText=
+storage.balance.toFixed(2);
+
+document.getElementById('waterText')
+.innerText=
+storage.water;
+
+renderGoals();
+
+renderGarden();
+
+renderHistory();
+
+}
+
+function renderGoals(){
+
+const box=
+document.getElementById('goalsContainer');
+
+box.innerHTML='';
+
+storage.goals.forEach(goal=>{
+
+const percent=
+Math.min(
+100,
+Math.floor(
+(goal.current/goal.target)*100
+)
+);
+
+let bubbles='';
+
+for(let i=0;i<8;i++){
+
+const colors=[
+'#60a5fa',
+'#34d399',
+'#f472b6',
+'#facc15',
+'#c084fc'
+];
+
+const color=
+colors[Math.floor(Math.random()*colors.length)];
+
+bubbles+=`
+
+<div class="colorBubble"
+style="
+background:${color};
+width:${Math.random()*10+5}px;
+height:${Math.random()*10+5}px;
+left:${Math.random()*100}%;
+bottom:-20px;
+animation-duration:${Math.random()*3+3}s;
+animation-delay:${Math.random()*3}s;
+">
+</div>
+
+`;
+
+}
+
+const div=
+document.createElement('div');
+
+div.className=
+'bg-white border rounded-3xl p-5 relative overflow-hidden';
+
+div.innerHTML=`
+
+${bubbles}
+
+<div class="relative z-10">
+
+<h3 class="font-black text-sm">
+${goal.name}
+</h3>
+
+<p class="text-xs text-slate-400 font-mono">
+${goal.current.toFixed(2)} €
+z ${goal.target.toFixed(2)} €
+</p>
+
+<div class="w-40 h-40 rounded-full bg-slate-100 p-2 mx-auto mt-4 overflow-hidden relative bubbleAnim">
+
+<div class="absolute inset-0 flex items-center justify-center z-20">
+
+<span class="text-3xl font-black text-white">
+
+${percent}%
+
+</span>
+
+</div>
+
+<div class="wave absolute w-[200%] h-[200%] bg-gradient-to-b from-cyan-400 to-blue-500 rounded-[40%]"
+style="top:${100-percent}%">
+
+</div>
+
+</div>
+
+<div class="grid grid-cols-2 gap-2 mt-4">
+
+<button onclick="addSavings(${goal.id})"
+class="bg-cyan-50 text-cyan-700 py-2 rounded-xl text-xs font-bold">
+
+🫧 Dodaj
+
+</button>
+
+<button onclick="spendSavings(${goal.id})"
+class="bg-red-50 text-red-600 py-2 rounded-xl text-xs font-bold">
+
+💸 Wydatek
+
+</button>
+
+</div>
+
+</div>
+`;
+
+box.appendChild(div);
+
+});
+
+}
+
+function openATM(){
+
+document.getElementById('atmModal')
+.classList.remove('hidden');
+
+}
+
+function closeATM(){
+
+document.getElementById('atmModal')
+.classList.add('hidden');
+
+}
+
+function confirmATM(){
+
+const type=
+document.getElementById('atmType').value;
+
+const amount=
+parseFloat(
+document.getElementById('atmAmount').value
+);
+
+const reason=
+document.getElementById('atmReason').value;
+
+if(isNaN(amount)||amount<=0)return;
+
+const now=
+new Date().toLocaleString();
+
+if(type==='deposit'){
+
+storage.balance+=amount;
+
+storage.history.unshift({
+title:'Wpłata',
+amount:'+'+amount+' €',
+date:now
+});
+
+}else{
+
+if(amount>storage.balance){
+
+alert('Za mało pieniędzy');
+
+return;
+
+}
+
+storage.balance-=amount;
+
+storage.history.unshift({
+title:'Wypłata'+(reason?' • '+reason:''),
+amount:'-'+amount+' €',
+date:now
+});
+
+}
+
+save();
+
+render();
+
+closeATM();
+
+}
+
+function openGoalModal(){
+
+document.getElementById('goalModal')
+.classList.remove('hidden');
+
+}
+
+function createGoal(){
+
+const name=
+document.getElementById('goalName').value;
+
+const target=
+parseFloat(
+document.getElementById('goalTarget').value
+);
+
+if(!name||isNaN(target))return;
+
+storage.goals.push({
+id:Date.now(),
+name:name,
+target:target,
+current:0
+});
+
+save();
+
+render();
+
+document.getElementById('goalModal')
+.classList.add('hidden');
+
+}
+
+function addSavings(id){
+
+const amount=
+parseFloat(prompt('Ile dodać?'));
+
+if(isNaN(amount)||amount<=0)return;
+
+if(amount>storage.balance){
+
+alert('Za mało pieniędzy');
+
+return;
+
+}
+
+const goal=
+storage.goals.find(g=>g.id===id);
+
+goal.current+=amount;
+
+storage.balance-=amount;
+
+storage.water+=
+Math.max(1,Math.floor(amount/5));
+
+storage.history.unshift({
+title:'Wpłacono na marzenie: '+goal.name,
+amount:'-'+amount+' €',
+date:new Date().toLocaleString()
+});
+
+save();
+
+render();
+
+}
+
+function spendSavings(id){
+
+const amount=
+parseFloat(prompt('Ile wydać?'));
+
+if(isNaN(amount)||amount<=0)return;
+
+const goal=
+storage.goals.find(g=>g.id===id);
+
+if(amount>goal.current){
+
+alert('Za mało środków');
+
+return;
+
+}
+
+goal.current-=amount;
+
+storage.balance+=amount;
+
+storage.history.unshift({
+title:'Wydano na marzenie: '+goal.name,
+amount:'+'+amount+' €',
+date:new Date().toLocaleString()
+});
+
+save();
+
+render();
+
+}
+
+function renderHistory(){
+
+const box=
+document.getElementById('historyContainer');
+
+box.innerHTML='';
+
+storage.history.forEach(item=>{
+
+const div=
+document.createElement('div');
+
+div.className=
+'bg-white border rounded-2xl p-3 flex justify-between items-center';
+
+div.innerHTML=`
+
+<div>
+
+<p class="font-bold text-xs">
+${item.title}
+</p>
+
+<p class="text-[10px] text-slate-400">
+${item.date}
+</p>
+
+</div>
+
+<div class="font-black text-sm">
+${item.amount}
+</div>
+
+`;
+
+box.appendChild(div);
+
+});
+
+}
+
+function clickPlant(index){
+
+const slot=
+storage.garden[index];
+
+if(!slot.planted){
+
+const choose=
+prompt(
+'Wpisz: marchewka / pomidor / cebula'
+);
+
+if(!choose)return;
+
+let emoji='🥕';
+
+if(choose==='pomidor')
+emoji='🍅';
+
+if(choose==='cebula')
+emoji='🧅';
+
+storage.garden[index]={
+planted:true,
+name:choose,
+emoji:emoji,
+progress:0
+};
+
+}else{
+
+if(slot.progress>=100){
+
+storage.garden[index]={
+planted:false,
+name:'',
+emoji:'',
+progress:0
+};
+
+}else{
+
+if(storage.water<=0){
+
+alert('Brak wody');
+
+return;
+
+}
+
+storage.water-=1;
+
+slot.progress+=15;
+
+if(slot.progress>100)
+slot.progress=100;
+
+}
+
+}
+
+save();
+
+renderGarden();
+
+}
+
+function renderGarden(){
+
+storage.garden.forEach((slot,i)=>{
+
+document.getElementById('plantEmoji'+i)
+.innerText=
+slot.planted
+? slot.emoji
+: '🟤';
+
+document.getElementById('plantName'+i)
+.innerText=
+slot.planted
+? slot.name+' '+slot.progress+'%'
+: 'Pusta ziemia';
+
+document.getElementById('plantBar'+i)
+.style.width=
+slot.progress+'%';
+
+});
+
+}
+
+render();
+
+document.addEventListener(
+'touchmove',
+function(){},
+{passive:true}
+);
+
+</script>
+
+</body>
+</html>
