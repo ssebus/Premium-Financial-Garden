@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BĄBELKOWY SYSTEM FINANSOWY - PRO ARCHITECTURE</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root { --bg: #0f172a; --panel: #ffffff; --accent: #0ea5e9; }
+        body { background: var(--bg); font-family: 'Inter', sans-serif; }
+        .app-window { width: 100%; max-width: 420px; height: 90vh; background: var(--panel); margin: 2vh auto; border-radius: 40px; overflow: hidden; display: flex; flex-direction: column; position: relative; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+        .sidebar { position: absolute; inset: 0; z-index: 500; background: #1e293b; color: white; transform: translateX(-100%); transition: transform 0.5s cubic-bezier(0.7, 0, 0.3, 1); padding: 3rem; }
+        .sidebar.open { transform: translateX(0); }
+        .module { display: none; padding: 2rem; height: 100%; overflow-y: auto; }
+        .module.active { display: block; }
+        .glass-btn { transition: all 0.2s; }
+        .glass-btn:active { transform: scale(0.98); }
+    </style>
+</head>
+<body>
+
+    <div id="auth-layer" class="fixed inset-0 z-[1000] bg-slate-900 flex items-center justify-center p-6">
+        <div class="bg-white p-10 rounded-[3rem] w-full max-w-sm shadow-2xl">
+            <h2 class="text-3xl font-black mb-8 text-center" id="auth-title">LOGOWANIE</h2>
+            <input type="text" id="user-name" placeholder="Nazwa użytkownika" class="w-full p-4 mb-4 bg-gray-100 rounded-xl font-bold">
+            <input type="password" id="user-pass" placeholder="Hasło" class="w-full p-4 mb-6 bg-gray-100 rounded-xl font-bold">
+            <button id="auth-btn" class="w-full py-5 bg-blue-600 text-white rounded-2xl font-black mb-4">ZALOGUJ</button>
+            <p class="text-center text-sm font-bold text-gray-400 cursor-pointer" onclick="toggleAuthMode()">Nie masz konta? Zarejestruj się</p>
+        </div>
+    </div>
+
+    <div class="app-window hidden" id="main-app">
+        <header class="p-6 flex justify-between items-center border-b">
+            <button onclick="toggleSidebar(true)" class="text-3xl">☰</button>
+            <h1 class="font-black">BĄBEL-OS PRO</h1>
+            <button onclick="location.reload()" class="bg-gray-100 px-3 py-1 rounded-full text-[10px] font-bold">WYLOGUJ</button>
+        </header>
+
+        <div id="sidebar" class="sidebar">
+            <button onclick="toggleSidebar(false)" class="text-4xl">✕</button>
+            <nav class="mt-12 space-y-8 text-2xl font-black">
+                <div onclick="switchModule('main')" class="cursor-pointer">🫧 Skarbonka</div>
+                <div onclick="switchModule('garden')" class="cursor-pointer">🏡 Ogród</div>
+                <div onclick="switchModule('history')" class="cursor-pointer">📊 Historia</div>
+            </nav>
+        </div>
+
+        <div class="flex-1">
+            <section id="mod-main" class="module active">
+                <div class="bg-slate-900 text-white p-8 rounded-3xl mb-6">
+                    <p class="text-xs uppercase opacity-60">Dostępne środki</p>
+                    <h2 class="text-5xl font-black mt-2"><span id="dsp-balance">0.00</span> €</h2>
+                </div>
+                <button onclick="atmTransaction()" class="w-full py-6 bg-emerald-500 text-white rounded-2xl font-black text-lg glass-btn">🎰 BANKOMAT</button>
+                <div id="goals-container" class="mt-8 space-y-4"></div>
+            </section>
+            
+            <section id="mod-garden" class="module">
+                <h2 class="text-3xl font-black mb-6">🏡 Twój Ogród</h2>
+                <div id="garden-grid" class="grid grid-cols-2 gap-4"></div>
+            </section>
+
+            <section id="mod-history" class="module">
+                <h2 class="text-3xl font-black mb-6">📊 Historia</h2>
+                <div id="history-list" class="space-y-2"></div>
+            </section>
+        </div>
+    </div>
+
+    <script>
+        // ARCHITEKTURA DANYCH: SYSTEM KLASOWY
+        class BubbleSystem {
+            constructor() {
+                this.user = null;
+                this.data = JSON.parse(localStorage.getItem('bubble_db')) || { 
+                    balance: 0, goals: [], history: [], garden: Array(4).fill(null) 
+                };
+            }
+
+            save() {
+                localStorage.setItem('bubble_db', JSON.stringify(this.data));
+                this.refreshUI();
+            }
+
+            refreshUI() {
+                document.getElementById('dsp-balance').innerText = this.data.balance.toFixed(2);
+                document.getElementById('goals-container').innerHTML = this.data.goals.map(g => 
+                    `<div class="p-6 bg-gray-50 rounded-2xl border flex justify-between">
+                        <span class="font-bold">${g.name}</span>
+                        <b class="text-blue-600">${g.target}€</b>
+                    </div>`).join('');
+            }
+        }
+
+        const sys = new BubbleSystem();
+        let isRegistering = false;
+
+        function toggleAuthMode() {
+            isRegistering = !isRegistering;
+            document.getElementById('auth-title').innerText = isRegistering ? "REJESTRACJA" : "LOGOWANIE";
+            document.getElementById('auth-btn').innerText = isRegistering ? "ZAREJESTRUJ" : "ZALOGUJ";
+        }
+
+        function auth() {
+            const user = document.getElementById('user-name').value;
+            if(user) {
+                document.getElementById('login-layer').style.display = 'none';
+                document.getElementById('main-app').classList.remove('hidden');
+            }
+        }
+
+        function switchModule(id) {
+            document.querySelectorAll('.module').forEach(m => m.classList.remove('active'));
+            document.getElementById('mod-' + id).classList.add('active');
+            toggleSidebar(false);
+        }
+
+        function toggleSidebar(open) {
+            document.getElementById('sidebar').classList.toggle('open', open);
+        }
+
+        function atmTransaction() {
+            let val = parseFloat(prompt("Kwota € (dodatnia wpłata, ujemna wypłata):"));
+            if(!isNaN(val)) {
+                sys.data.balance += val;
+                sys.data.history.unshift({ type: 'Transakcja', val: val, date: new Date().toLocaleDateString() });
+                sys.save();
+            }
+        }
+
+        sys.refreshUI();
+    </script>
+</body>
+</html>
