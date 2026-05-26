@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Bąbelkowy Ogród Finansowy PRO</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<!-- SUPABASE -->
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
+<style>
+
+html,body{
+margin:0;
+height:100%;
+overflow:hidden;
+font-family:sans-serif;
+}
+
+body{
+background:linear-gradient(135deg,#dbeafe,#f0fdf4,#f8fafc);
+background-size:200% 200%;
+animation:bgMove 15s ease infinite;
+display:flex;
+justify-content:center;
+align-items:center;
+padding:10px;
+}
+
+@keyframes bgMove{
+0%{background-position:0% 50%;}
+50%{background-position:100% 50%;}
+100%{background-position:0% 50%;}
+}
+
+.app{
+width:100%;
+max-width:430px;
+height:96vh;
+background:rgba(255,255,255,.88);
+backdrop-filter:blur(20px);
+border-radius:40px;
+overflow:hidden;
+display:flex;
+flex-direction:column;
+position:relative;
+box-shadow:0 20px 60px rgba(0,0,0,.15);
+}
+
+.topbar{
+background:linear-gradient(90deg,#22d3ee,#10b981);
+padding:18px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+color:white;
+}
+
+.scroll{
+flex:1;
+overflow-y:auto;
+padding:16px;
+-webkit-overflow-scrolling:touch;
+}
+
+.card{
+background:white;
+border-radius:28px;
+padding:18px;
+border:1px solid #e2e8f0;
+position:relative;
+overflow:hidden;
+}
+
+.goalCard{
+background:white;
+border-radius:28px;
+padding:18px;
+border:1px solid #e2e8f0;
+margin-top:16px;
+overflow:hidden;
+position:relative;
+}
+
+.wave{
+position:absolute;
+width:230%;
+height:230%;
+left:-65%;
+border-radius:42%;
+animation:waveRotate 10s linear infinite;
+}
+
+@keyframes waveRotate{
+0%{transform:rotate(0deg);}
+100%{transform:rotate(360deg);}
+}
+
+.bubble{
+position:absolute;
+border-radius:999px;
+animation:bubbleUp linear infinite;
+}
+
+@keyframes bubbleUp{
+0%{
+transform:translateY(0) scale(.4);
+opacity:0;
+}
+20%{
+opacity:1;
+}
+100%{
+transform:translateY(-170px) scale(1.5);
+opacity:0;
+}
+}
+
+button{
+cursor:pointer;
+}
+
+.mainBtn{
+border:none;
+padding:14px;
+border-radius:18px;
+font-weight:900;
+}
+
+input{
+width:100%;
+padding:14px;
+border-radius:16px;
+border:1px solid #cbd5e1;
+background:#f8fafc;
+outline:none;
+font-weight:700;
+box-sizing:border-box;
+}
+
+.slot{
+background:white;
+border-radius:24px;
+height:180px;
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+border:1px solid #e2e8f0;
+padding:10px;
+}
+
+.authScreen{
+position:absolute;
+inset:0;
+background:rgba(255,255,255,.97);
+z-index:300;
+display:flex;
+justify-content:center;
+align-items:center;
+padding:24px;
+}
+
+.authBox{
+background:white;
+width:100%;
+border-radius:34px;
+padding:26px;
+box-shadow:0 20px 50px rgba(0,0,0,.12);
+}
+
+.authSwitch{
+display:flex;
+background:#e2e8f0;
+padding:4px;
+border-radius:999px;
+margin-top:20px;
+}
+
+.authSwitch button{
+flex:1;
+padding:12px;
+border:none;
+border-radius:999px;
+font-weight:900;
+background:transparent;
+}
+
+.activeSwitch{
+background:white !important;
+box-shadow:0 5px 15px rgba(0,0,0,.08);
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+<!-- LOGOWANIE -->
+
+<div id="authScreen" class="authScreen">
+
+<div class="authBox">
+
+<div style="text-align:center;">
+
+<div style="font-size:60px;">🫧</div>
+
+<div style="font-size:28px;font-weight:900;margin-top:10px;">
+Bąbelkowy Ogród
+</div>
+
+<div style="font-size:13px;color:#64748b;margin-top:5px;">
+Logowanie online Supabase
+</div>
+
+</div>
+
+<div class="authSwitch">
+
+<button id="loginTab"
+class="activeSwitch"
+type="button"
+onclick="switchAuth('login')">
+Logowanie
+</button>
+
+<button id="registerTab"
+type="button"
+onclick="switchAuth('register')">
+Rejestracja
+</button>
+
+</div>
+
+<div style="margin-top:18px;">
+<input type="email" id="email" placeholder="E-mail">
+</div>
+
+<div style="margin-top:14px;">
+<input type="password" id="password" placeholder="Hasło">
+</div>
+
+<button
+id="authButton"
+type="button"
+onclick="submitAuth()"
+class="mainBtn"
+style="
+width:100%;
+margin-top:18px;
+background:linear-gradient(90deg,#22d3ee,#10b981);
+color:white;
+">
+Zaloguj się
+</button>
+
+<div id="authInfo"
+style="
+margin-top:14px;
+text-align:center;
+font-size:12px;
+color:#64748b;
+">
+</div>
+
+</div>
+
+</div>
+
+<!-- TOP -->
+
+<div class="topbar">
+
+<div>
+
+<div style="font-size:15px;font-weight:900;">
+🫧 BĄBELKOWY OGRÓD
+</div>
+
+<div style="font-size:10px;">
+Supabase Cloud Sync
+</div>
+
+</div>
+
+<div style="display:flex;gap:8px;">
+
+<button onclick="showHistory()"
+style="
+border:none;
+background:rgba(255,255,255,.2);
+padding:10px 14px;
+border-radius:14px;
+color:white;
+font-weight:900;
+">
+📜
+</button>
+
+<button onclick="logout()"
+style="
+border:none;
+background:rgba(255,255,255,.2);
+padding:10px 14px;
+border-radius:14px;
+color:white;
+font-weight:900;
+">
+🚪
+</button>
+
+</div>
+
+</div>
+
+<!-- CONTENT -->
+
+<div class="scroll">
+
+<div class="card">
+
+<div style="
+font-size:10px;
+font-weight:900;
+color:#94a3b8;
+text-transform:uppercase;
+">
+Wolne środki
+</div>
+
+<div style="
+font-size:42px;
+font-weight:900;
+margin-top:6px;
+">
+<span id="balanceText">0.00</span> €
+</div>
+
+<div style="display:flex;gap:10px;margin-top:18px;">
+
+<button onclick="depositMoney()"
+class="mainBtn"
+style="flex:1;background:#10b981;color:white;">
+➕ Wpłać
+</button>
+
+<button onclick="withdrawMoney()"
+class="mainBtn"
+style="flex:1;background:#ef4444;color:white;">
+➖ Wydatek
+</button>
+
+</div>
+
+</div>
+
+<!-- GOALS -->
+
+<div style="
+margin-top:22px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+">
+
+<div style="
+font-size:12px;
+font-weight:900;
+color:#475569;
+">
+🎯 CELE
+</div>
+
+<button onclick="addGoal()"
+style="
+border:none;
+background:#cffafe;
+color:#0891b2;
+padding:10px 14px;
+border-radius:14px;
+font-weight:900;
+">
++ Dodaj
+</button>
+
+</div>
+
+<div id="goals"></div>
+
+<!-- OGRÓD -->
+
+<div style="margin-top:26px;">
+
+<div style="
+font-size:12px;
+font-weight:900;
+color:#475569;
+">
+🌱 OGRÓD
+</div>
+
+<div style="
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:12px;
+margin-top:14px;
+">
+
+<div class="slot" onclick="waterPlant(0)">
+<div id="plant0emoji" style="font-size:44px;">🟤</div>
+<div id="plant0text" style="margin-top:10px;font-size:12px;font-weight:900;">
+Pusta gleba
+</div>
+</div>
+
+<div class="slot" onclick="waterPlant(1)">
+<div id="plant1emoji" style="font-size:44px;">🟤</div>
+<div id="plant1text" style="margin-top:10px;font-size:12px;font-weight:900;">
+Pusta gleba
+</div>
+</div>
+
+<div class="slot" onclick="waterPlant(2)">
+<div id="plant2emoji" style="font-size:44px;">🟤</div>
+<div id="plant2text" style="margin-top:10px;font-size:12px;font-weight:900;">
+Pusta gleba
+</div>
+</div>
+
+<div class="slot" onclick="waterPlant(3)">
+<div id="plant3emoji" style="font-size:44px;">🟤</div>
+<div id="plant3text" style="margin-top:10px;font-size:12px;font-weight:900;">
+Pusta gleba
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+/* ---------------- SUPABASE ---------------- */
+
+/* TU WKLEJ SWOJE DANE */
+
+const SUPABASE_URL = "TUTAJ_SUPABASE_URL";
+const SUPABASE_KEY = "TUTAJ_SUPABASE_ANON_KEY";
+
+/* NAPRAWIONE LOGOWANIE */
+
+const supabaseClient = window.supabase.createClient(
+SUPABASE_URL,
+SUPABASE_KEY
+);
+
+/* ---------------- AUTH ---------------- */
+
+let authMode = "login";
+
+function switchAuth(mode){
+
+authMode = mode;
+
+document.getElementById("loginTab")
+.classList.remove("activeSwitch");
+
+document.getElementById("registerTab")
+.classList.remove("activeSwitch");
+
+if(mode==="login"){
+
+document.getElementById("loginTab")
+.classList.add("activeSwitch");
+
+document.getElementById("authButton")
+.innerText="Zaloguj się";
+
+}else{
+
+document.getElementById("registerTab")
+.classList.add("activeSwitch");
+
+document.getElementById("authButton")
+.innerText="Zarejestruj się";
+
+}
+
+}
+
+async function submitAuth(){
+
+const email =
+document.getElementById("email").value;
+
+const password =
+document.getElementById("password").value;
+
+if(!email || !password){
+
+document.getElementById("authInfo")
+.innerText="Wpisz email i hasło";
+
+return;
+}
+
+try{
+
+if(authMode==="register"){
+
+const { error } =
+await supabaseClient.auth.signUp({
+email,
+password
+});
+
+if(error){
+
+document.getElementById("authInfo")
+.innerText=error.message;
+
+}else{
+
+document.getElementById("authInfo")
+.innerText="Konto utworzone!";
+
+}
+
+}else{
+
+const { error } =
+await supabaseClient.auth.signInWithPassword({
+email,
+password
+});
+
+if(error){
+
+document.getElementById("authInfo")
+.innerText=error.message;
+
+}else{
+
+loadApp();
+
+}
+
+}
+
+}catch(e){
+
+document.getElementById("authInfo")
+.innerText="Błąd logowania";
+
+}
+
+}
+
+async function logout(){
+
+await supabaseClient.auth.signOut();
+
+document.getElementById("authScreen")
+.style.display="flex";
+
+}
+
+/* ---------------- DATA ---------------- */
+
+let data = {
+balance:0,
+history:[],
+goals:[],
+garden:[
+{emoji:"🟤",name:"Pusta gleba",progress:0},
+{emoji:"🟤",name:"Pusta gleba",progress:0},
+{emoji:"🟤",name:"Pusta gleba",progress:0},
+{emoji:"🟤",name:"Pusta gleba",progress:0}
+]
+};
+
+/* ---------------- CLOUD ---------------- */
+
+async function saveCloud(){
+
+const {
+data:userData
+} = await supabaseClient.auth.getUser();
+
+const user = userData.user;
+
+if(!user)return;
+
+await supabaseClient
+.from("garden_users")
+.upsert({
+id:user.id,
+save_data:data
+});
+
+}
+
+async function loadCloud(){
+
+const {
+data:userData
+} = await supabaseClient.auth.getUser();
+
+const user = userData.user;
+
+if(!user)return;
+
+const { data:cloud } =
+await supabaseClient
+.from("garden_users")
+.select("*")
+.eq("id",user.id)
+.single();
+
+if(cloud && cloud.save_data){
+
+data = cloud.save_data;
+
+}else{
+
+await supabaseClient
+.from("garden_users")
+.insert({
+id:user.id,
+save_data:data
+});
+
+}
+
+updateUI();
+
+}
+
+/* ---------------- APP ---------------- */
+
+async function loadApp(){
+
+document.getElementById("authScreen")
+.style.display="none";
+
+await loadCloud();
+
+}
+
+/* ---------------- UI ---------------- */
+
+function updateUI(){
+
+document.getElementById("balanceText")
+.innerText=data.balance.toFixed(2);
+
+renderGoals();
+renderGarden();
+
+saveCloud();
+
+}
+
+/* ---------------- MONEY ---------------- */
+
+function depositMoney(){
+
+const value =
+parseFloat(prompt("Ile wpłacić?"));
+
+if(isNaN(value)||value<=0)return;
+
+data.balance += value;
+
+data.history.unshift({
+text:`➕ Wpłata ${value}€`,
+date:new Date().toLocaleString()
+});
+
+updateUI();
+
+}
+
+function withdrawMoney(){
+
+const value =
+parseFloat(prompt("Ile wydać?"));
+
+if(isNaN(value)||value<=0)return;
+
+if(value>data.balance){
+
+alert("Brak środków");
+return;
+
+}
+
+const desc =
+prompt("Na co wydałeś?");
+
+data.balance -= value;
+
+data.history.unshift({
+text:`➖ ${value}€ • ${desc || "Wydatek"}`,
+date:new Date().toLocaleString()
+});
+
+updateUI();
+
+}
+
+/* ---------------- HISTORY ---------------- */
+
+function showHistory(){
+
+let text="";
+
+data.history.forEach(h=>{
+
+text += h.date +
+"\n" +
+h.text +
+"\n\n";
+
+});
+
+if(text===""){
+text="Brak historii";
+}
+
+alert(text);
+
+}
+
+/* ---------------- GOALS ---------------- */
+
+function addGoal(){
+
+const name =
+prompt("Nazwa marzenia:");
+
+if(!name)return;
+
+const target =
+parseFloat(prompt("Kwota celu"));
+
+if(isNaN(target)||target<=0)return;
+
+data.goals.push({
+id:Date.now(),
+name,
+target,
+current:0
+});
+
+updateUI();
+
+}
+
+function addToGoal(id){
+
+const value =
+parseFloat(prompt("Ile dodać?"));
+
+if(isNaN(value)||value<=0)return;
+
+if(value>data.balance){
+
+alert("Brak środków");
+return;
+
+}
+
+const goal =
+data.goals.find(g=>g.id===id);
+
+goal.current += value;
+
+data.balance -= value;
+
+data.history.unshift({
+text:`🫧 ${value}€ wpłacono na marzenie "${goal.name}"`,
+date:new Date().toLocaleString()
+});
+
+updateUI();
+
+}
+
+function buyGoal(id){
+
+const goal =
+data.goals.find(g=>g.id===id);
+
+if(goal.current < goal.target){
+
+alert("Cel nieukończony");
+return;
+
+}
+
+data.history.unshift({
+text:`🛍️ Kupiono marzenie "${goal.name}"`,
+date:new Date().toLocaleString()
+});
+
+data.goals =
+data.goals.filter(g=>g.id!==id);
+
+updateUI();
+
+}
+
+function renderGoals(){
+
+const box =
+document.getElementById("goals");
+
+box.innerHTML="";
+
+data.goals.forEach(goal=>{
+
+const percent = Math.min(
+Math.round((goal.current/goal.target)*100),
+100
+);
+
+let bubbles="";
+
+for(let i=0;i<10;i++){
+
+const colors=[
+"#22d3ee",
+"#10b981",
+"#f472b6",
+"#a855f7",
+"#f59e0b"
+];
+
+const color =
+colors[Math.floor(Math.random()*colors.length)];
+
+bubbles += `
+<div class="bubble"
+style="
+width:${Math.random()*12+5}px;
+height:${Math.random()*12+5}px;
+background:${color};
+left:${Math.random()*100}%;
+bottom:-20px;
+animation-duration:${Math.random()*3+2}s;
+animation-delay:${Math.random()*2}s;
+">
+</div>
+`;
+
+}
+
+const card =
+document.createElement("div");
+
+card.className="goalCard";
+
+card.innerHTML=`
+
+<div style="
+font-size:16px;
+font-weight:900;
+text-align:center;
+">
+${goal.name}
+</div>
+
+<div style="
+font-size:12px;
+color:#64748b;
+text-align:center;
+margin-top:6px;
+">
+${goal.current.toFixed(0)} € z ${goal.target.toFixed(0)} €
+</div>
+
+<div style="
+width:170px;
+height:170px;
+margin:20px auto;
+background:#f8fafc;
+border-radius:999px;
+overflow:hidden;
+position:relative;
+border:6px solid #67e8f9;
+">
+
+<div class="wave"
+style="
+top:${100-percent}%;
+background:linear-gradient(#22d3ee,#3b82f6);
+">
+</div>
+
+${bubbles}
+
+<div style="
+position:absolute;
+inset:0;
+display:flex;
+justify-content:center;
+align-items:center;
+font-size:34px;
+font-weight:900;
+color:white;
+z-index:10;
+">
+${percent}%
+</div>
+
+</div>
+
+<div style="display:flex;gap:10px;">
+
+<button onclick="addToGoal(${goal.id})"
+class="mainBtn"
+style="
+flex:1;
+background:#22d3ee;
+color:white;
+">
+💧 Dodaj
+</button>
+
+${
+percent>=100
+?
+`
+<button onclick="buyGoal(${goal.id})"
+class="mainBtn"
+style="
+flex:1;
+background:#10b981;
+color:white;
+">
+🛍️ Kupuję
+</button>
+`
+:
+""
+}
+
+</div>
+
+`;
+
+box.appendChild(card);
+
+});
+
+}
+
+/* ---------------- OGRÓD ---------------- */
+
+const plants=[
+{emoji:"🥕",name:"Marchewka"},
+{emoji:"🍅",name:"Pomidor"},
+{emoji:"🍎",name:"Jabłoń"},
+{emoji:"🧅",name:"Cebula"}
+];
+
+function waterPlant(index){
+
+const plant=data.garden[index];
+
+if(plant.progress===0){
+
+const p=
+plants[Math.floor(Math.random()*plants.length)];
+
+data.garden[index]={
+emoji:p.emoji,
+name:p.name,
+progress:10
+};
+
+updateUI();
+return;
+
+}
+
+plant.progress += 10;
+
+if(plant.progress>=100){
+
+plant.progress=100;
+
+setTimeout(()=>{
+
+data.garden[index]={
+emoji:"🟤",
+name:"Pusta gleba",
+progress:0
+};
+
+updateUI();
+
+},2000);
+
+}
+
+updateUI();
+
+}
+
+function renderGarden(){
+
+for(let i=0;i<4;i++){
+
+document.getElementById(`plant${i}emoji`)
+.innerText=data.garden[i].emoji;
+
+document.getElementById(`plant${i}text`)
+.innerText=
+data.garden[i].name +
+(data.garden[i].progress>0
+? " "+data.garden[i].progress+"%"
+: "");
+
+}
+
+}
+
+/* ---------------- AUTO LOGIN ---------------- */
+
+async function checkSession(){
+
+const {
+data:{session}
+} = await supabaseClient.auth.getSession();
+
+if(session){
+
+loadApp();
+
+}
+
+}
+
+checkSession();
+
+</script>
+
+</body>
+</html>
