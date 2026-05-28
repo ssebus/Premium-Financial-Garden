@@ -1,0 +1,1281 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bąbelkowy Ogród Finansowy PRO</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+<style>
+
+html,body{
+height:100%;
+margin:0;
+overflow:hidden;
+font-family:sans-serif;
+touch-action:pan-y;
+}
+
+body{
+background:linear-gradient(135deg,#e0f2fe 0%,#f8fafc 50%,#f0fdf4 100%);
+background-size:200% 200%;
+animation:bgMove 12s ease infinite;
+display:flex;
+justify-content:center;
+align-items:center;
+padding:10px;
+}
+
+@keyframes bgMove{
+0%{background-position:0% 50%;}
+50%{background-position:100% 50%;}
+100%{background-position:0% 50%;}
+}
+
+.app{
+width:100%;
+max-width:430px;
+height:96vh;
+background:rgba(255,255,255,.88);
+backdrop-filter:blur(20px);
+border-radius:38px;
+overflow:hidden;
+display:flex;
+flex-direction:column;
+box-shadow:0 25px 60px rgba(0,0,0,.12);
+border:1px solid rgba(255,255,255,.7);
+position:relative;
+}
+
+.scroll{
+flex:1;
+overflow-y:auto;
+padding:16px;
+-webkit-overflow-scrolling:touch;
+}
+
+.topbar{
+background:linear-gradient(90deg,#22d3ee,#10b981);
+padding:16px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+color:white;
+}
+
+.title{
+font-weight:900;
+font-size:14px;
+}
+
+.balanceCard{
+background:white;
+border-radius:28px;
+padding:20px;
+border:2px solid #cffafe;
+box-shadow:0 0 25px rgba(34,211,238,.18);
+}
+
+.goalCard{
+background:white;
+border-radius:28px;
+padding:18px;
+position:relative;
+overflow:hidden;
+border:1px solid #e2e8f0;
+}
+
+.wave{
+position:absolute;
+width:220%;
+height:220%;
+left:-60%;
+border-radius:40%;
+animation:waveRotate 10s linear infinite;
+}
+
+@keyframes waveRotate{
+0%{transform:rotate(0deg);}
+100%{transform:rotate(360deg);}
+}
+
+.bubble{
+position:absolute;
+border-radius:999px;
+animation:bubbleUp linear infinite;
+opacity:.8;
+}
+
+@keyframes bubbleUp{
+0%{
+transform:translateY(0) scale(.5);
+opacity:0;
+}
+20%{
+opacity:1;
+}
+100%{
+transform:translateY(-170px) scale(1.5);
+opacity:0;
+}
+}
+
+.slot{
+background:white;
+border-radius:24px;
+padding:14px;
+height:180px;
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+border:1px solid #e2e8f0;
+transition:.2s;
+}
+
+.slot:active{
+transform:scale(.97);
+}
+
+.modal{
+position:absolute;
+inset:0;
+background:rgba(0,0,0,.4);
+backdrop-filter:blur(5px);
+display:none;
+justify-content:center;
+align-items:center;
+padding:20px;
+z-index:100;
+}
+
+.modalBox{
+background:white;
+width:100%;
+border-radius:28px;
+padding:20px;
+max-height:90vh;
+overflow-y:auto;
+}
+
+input,select{
+width:100%;
+padding:14px;
+border-radius:16px;
+border:1px solid #cbd5e1;
+background:#f8fafc;
+font-weight:700;
+outline:none;
+}
+
+.mainBtn{
+padding:14px;
+border-radius:18px;
+font-weight:900;
+border:none;
+cursor:pointer;
+}
+
+.histItem{
+background:white;
+border-radius:18px;
+padding:12px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+border:1px solid #e2e8f0;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+<!-- HEADER -->
+
+<div class="topbar">
+
+<div>
+<div class="title" id="appTitle">
+🫧 BĄBELKOWY OGRÓD
+</div>
+
+<div style="font-size:10px;opacity:.9;" id="appSubtitle">
+Premium Financial Garden
+</div>
+</div>
+
+<div style="display:flex;gap:8px;align-items:center;">
+
+<button onclick="openLangModal()"
+style="background:rgba(255,255,255,.2);border:none;padding:10px 12px;border-radius:14px;color:white;font-weight:900;cursor:pointer;">
+🌐
+</button>
+
+<button onclick="openHistory()"
+style="background:rgba(255,255,255,.2);border:none;padding:10px 12px;border-radius:14px;color:white;font-weight:900;">
+📊
+</button>
+
+<button onclick="resetApp()"
+style="background:rgba(255,255,255,.2);border:none;padding:10px 12px;border-radius:14px;color:white;font-weight:900;">
+♻️
+</button>
+
+</div>
+
+</div>
+
+<!-- SCROLL -->
+
+<div class="scroll">
+
+<!-- BALANCE -->
+
+<div class="balanceCard">
+
+<div id="freeFundsLabel" style="font-size:10px;font-weight:900;color:#94a3b8;text-transform:uppercase;">
+Wolne środki
+</div>
+
+<div style="font-size:42px;font-weight:900;margin-top:6px;">
+<span id="balanceText">0.00</span> €
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px;">
+
+<button onclick="openATM('deposit')"
+class="mainBtn"
+id="depositBtn"
+style="background:#10b981;color:white;">
+💵 WPŁAĆ
+</button>
+
+<button onclick="openATM('withdraw')"
+class="mainBtn"
+id="withdrawBtn"
+style="background:#ef4444;color:white;">
+💸 WYDAJ
+</button>
+
+</div>
+
+</div>
+
+<!-- WATER -->
+
+<div style="background:linear-gradient(90deg,#dbeafe,#cffafe);padding:18px;border-radius:24px;border:1px solid #bfdbfe;display:flex;justify-content:space-between;align-items:center;margin-top:16px;">
+
+<div>
+
+<div id="gardenWaterLabel" style="font-size:11px;font-weight:900;color:#0369a1;">
+💧 Woda ogrodowa
+</div>
+
+<div id="waterPlantsLabel" style="font-size:10px;color:#64748b;margin-top:2px;">
+Podlewaj rośliny
+</div>
+
+</div>
+
+<div style="font-size:32px;font-weight:900;color:#0284c7;">
+<span id="waterText">0</span>
+</div>
+
+</div>
+
+<!-- GOALS -->
+
+<div style="margin-top:22px;display:flex;justify-content:space-between;align-items:center;">
+
+<div id="savingsGoalsLabel" style="font-size:12px;font-weight:900;color:#475569;text-transform:uppercase;">
+Cele oszczędnościowe
+</div>
+
+<button onclick="openGoalModal()"
+id="newGoalBtn"
+style="background:#cffafe;color:#0891b2;border:none;padding:10px 14px;border-radius:999px;font-size:11px;font-weight:900;">
++ NOWY
+</button>
+
+</div>
+
+<div id="goalsWrap" style="margin-top:14px;display:flex;flex-direction:column;gap:16px;"></div>
+
+<!-- GARDEN -->
+
+<div id="yourGardenLabel" style="margin-top:28px;font-size:12px;font-weight:900;color:#475569;text-transform:uppercase;">
+🏡 Twój ogród
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px;" id="gardenWrap"></div>
+
+<!-- CENTRUM POWIADOMIEN APKI -->
+<div style="margin-top:28px; display:flex; justify-content:space-between; align-items:center;">
+    <div id="appNotificationsLabel" style="font-size:12px; font-weight:900; color:#475569; text-transform:uppercase;">
+        🔔 Centrum powiadomień
+    </div>
+    <button onclick="clearAllNotifications()" id="clearAllNtfBtn" style="background:none; border:none; color:#ef4444; font-size:10px; font-weight:900; cursor:pointer; text-transform:uppercase; letter-spacing:0.5px;">
+        WYCZYŚĆ
+    </button>
+</div>
+
+<!-- WŁĄCZNIK / WYŁĄCZNIK I TESTER POWIADOMIEN -->
+<div style="display:flex; flex-direction:column; gap:8px; margin-top:10px;">
+    <div onclick="toggleNotificationsManually()" id="ntfStatusBadge" style="padding: 12px 16px; border-radius: 18px; font-size: 12px; font-weight: 800; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: 0.2s; border: 1px solid #cbd5e1; background: #f1f5f9;">
+        <span id="ntfStatusText">Stan powiadomień...</span>
+        <span id="ntfStatusPluska" style="font-size: 16px;">⚪</span>
+    </div>
+    
+    <button onclick="triggerNotificationTest()" id="testNtfBtn" class="mainBtn" style="background: #0284c7; color: white; padding: 10px; font-size: 11px; box-shadow: 0 4px 10px rgba(2,132,199,0.15);">
+        🧪 TESTUJ POWIADOMIENIA
+    </button>
+</div>
+
+<!-- KONTENER NA LISTĘ WIADOMOŚCI -->
+<div id="appNotificationsWrap" style="margin-top:10px; margin-bottom: 20px; display:flex; flex-direction:column; gap:10px; background: rgba(248, 250, 252, 0.7); padding: 14px; border-radius: 24px; border: 1px solid #e2e8f0; max-height: 220px; overflow-y: auto;">
+</div>
+
+</div>
+
+<!-- ATM MODAL -->
+
+<div class="modal" id="atmModal">
+
+<div class="modalBox">
+
+<div style="display:flex;justify-content:space-between;align-items:center;">
+
+<div id="atmTitle" style="font-size:18px;font-weight:900;">
+🏧 Operacja
+</div>
+
+<button onclick="closeATM()"
+style="border:none;background:none;font-size:24px;">
+✕
+</button>
+
+</div>
+
+<div style="margin-top:18px;">
+
+<input type="number" id="atmAmount" placeholder="Kwota €">
+
+</div>
+
+<div style="margin-top:14px;">
+
+<input type="text" id="atmReason" placeholder="Powód / marzenie / jedzenie (opcjonalnie)">
+
+</div>
+
+<div style="margin-top:18px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+
+<button onclick="closeATM()"
+class="mainBtn"
+id="atmCancelBtn"
+style="background:#e2e8f0;">
+Anuluj
+</button>
+
+<button onclick="confirmATM()"
+class="mainBtn"
+id="atmConfirmBtn"
+style="background:#06b6d4;color:white;">
+Zatwierdź
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- GOAL MODAL -->
+
+<div class="modal" id="goalModal">
+
+<div class="modalBox">
+
+<div style="display:flex;justify-content:space-between;align-items:center;">
+
+<div id="newGoalTitle" style="font-size:18px;font-weight:900;">
+🎯 Nowy cel
+</div>
+
+<button onclick="closeGoalModal()"
+style="border:none;background:none;font-size:24px;">
+✕
+</button>
+
+</div>
+
+<div style="margin-top:16px;">
+<input type="text" id="goalName" placeholder="Np. Telefon">
+</div>
+
+<div style="margin-top:14px;">
+<input type="number" id="goalTarget" placeholder="Kwota docelowa €">
+</div>
+
+<div style="margin-top:18px;">
+<button onclick="createGoal()"
+class="mainBtn"
+id="createGoalBtn"
+style="background:#10b981;color:white;width:100%;">
+Stwórz cel
+</button>
+</div>
+
+</div>
+
+</div>
+
+<!-- HISTORY MODAL -->
+
+<div class="modal" id="historyModal">
+
+<div class="modalBox">
+
+<div style="display:flex;justify-content:space-between;align-items:center;">
+
+<div id="historyTitle" style="font-size:18px;font-weight:900;">
+📊 Historia
+</div>
+
+<button onclick="closeHistory()"
+style="border:none;background:none;font-size:24px;">
+✕
+</button>
+
+</div>
+
+<div id="historyWrap"
+style="margin-top:16px;display:flex;flex-direction:column;gap:10px;"></div>
+
+</div>
+
+</div>
+
+<!-- LANGUAGE MODAL -->
+
+<div class="modal" id="langModal">
+
+<div class="modalBox">
+
+<div style="display:flex;justify-content:space-between;align-items:center;">
+
+<div id="langModalTitle" style="font-size:18px;font-weight:900;">
+🌐 Język / Language / Sprache
+</div>
+
+<button onclick="closeLangModal()"
+style="border:none;background:none;font-size:24px;">
+✕
+</button>
+
+</div>
+
+<div style="margin-top:20px;display:flex;flex-direction:column;gap:12px;">
+
+<select id="langSelect" onchange="changeLanguage(this.value)">
+</select>
+
+</div>
+
+<div style="margin-top:20px;">
+
+<button onclick="closeLangModal()"
+class="mainBtn"
+id="langCloseBtn"
+style="background:#06b6d4;color:white;width:100%;">
+OK
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- TEST ALERTA MODAL (OKIENKO Z PRZYCISKIEM OK) -->
+<div class="modal" id="testNtfModal">
+    <div class="modalBox" style="text-align: center; max-width: 340px;">
+        <div style="font-size: 44px; margin-bottom: 10px;">🚀</div>
+        <div id="testModalTitle" style="font-size: 16px; font-weight: 900; color: #0f172a; line-height: 1.4;">
+            Wysłaliśmy Ci testowe powiadomienie!
+        </div>
+        <div id="testModalDesc" style="font-size: 12px; color: #64748b; margin-top: 8px; margin-bottom: 18px; font-weight: 600;">
+            Sprawdź, czy dotarło i czy poprawnie wyświetliło się w aplikacji oraz na Twoim urządzeniu.
+        </div>
+        <button onclick="closeTestNtfModal()" class="mainBtn" style="background: #10b981; color: white; width: 100%; padding: 12px;">
+            OK
+        </button>
+    </div>
+</div>
+
+</div>
+
+<script>
+
+let atmMode="deposit";
+
+let data={
+lang:"pl",
+balance:0,
+water:0,
+goals:[],
+history:[],
+notificationsLog:[], 
+expandedNotifications: {}, 
+notificationChoice: "granted", // Domyślnie włączone tylko wewnątrz aplikacji
+garden:[
+{planted:false},
+{planted:false},
+{planted:false},
+{planted:false}
+],
+inventory:["🥕","🍅","🧅","🍎"]
+};
+
+const translations = {
+pl: {
+appTitle: "🫧 BĄBELKOWY OGRÓD",
+appSubtitle: "Premium Financial Garden",
+freeFunds: "Wolne środki",
+deposit: "💵 WPŁAĆ",
+withdraw: "💸 WYDAJ",
+gardenWater: "💧 Woda ogrodowa",
+waterPlants: "Podlewaj rośliny",
+savingsGoals: "Cele oszczędnościowe",
+newGoal: "+ NOWY",
+yourGarden: "🏡 Twój ogród",
+operation: "🏧 Operacja",
+cancel: "Anuluj",
+confirm: "Zatwierdź",
+newGoalTitle: "🎯 Nowy cel",
+createGoalBtn: "Stwórz cel",
+historyTitle: "📊 Historia",
+noGoals: "Brak celów",
+noHistory: "Brak historii",
+emptySoil: "Pusta gleba",
+plantPlant: "Roślina",
+plantCarrot: "Marchewka",
+plantTomato: "Pomidor",
+plantOnion: "Cebula",
+plantApple: "Jabłoń",
+atmAmountPlh: "Kwota €",
+atmReasonPlh: "Powód / marzenie / jedzenie (opcjonalnie)",
+goalNamePlh: "Np. Telefon",
+goalTargetPlh: "Kwota docelowa €",
+langModalTitle: "🌐 Wybierz język",
+langCloseBtn: "Zamknij",
+alertNoMoney: "Brak pieniędzy",
+alertNoFunds: "Brak środków",
+alertNoSeeds: "Brak nasion",
+alertNoWater: "Brak wody",
+alertLowSavings: "Za mało oszczędności",
+alertBought: "Kupiono: ",
+promptAddGoal: "Ile € chcesz dodać?",
+histDeposit: "💵 Wpłata",
+histWithdrawDefault: "💸 Wypłata",
+histWithdrawReason: "💸 Wydano na ",
+histGoal: "🫧 Wpłacono na marzenie ",
+histBuy: "🛍️ Kupiono marzenie ",
+goalBtnAdd: "💧 Dodaj",
+goalBtnBuy: "🛍️ Kup",
+ntfDeposit: "Pomyślnie wpłacono: +",
+ntfWithdraw: "Pomyślnie wydano: -",
+ntfWithdrawFor: " na: ",
+ntfNewGoal: "Dodano nowy cel: ",
+ntfGoalAdded: "Wpłacono na marzenie ",
+ntfGoalSuccess: "🎉 Cel osiągnięty! Kupiono: ",
+ntfHarvest: "🌱 Roślina w pełni wyrosła! Warka warzyw została pomyślnie zebrana do Twojego ekwipunku.",
+appNotificationsLabel: "🔔 Centrum powiadomień",
+clearAllBtn: "WYCZYŚĆ",
+noNotifications: "Brak powiadomień",
+statusActive: "Powiadomienia w aplikacji: WŁĄCZONE",
+statusDisabled: "Powiadomienia w aplikacji: WYŁĄCZONE",
+showMore: "Pokaż więcej",
+showLess: "Pokaż mniej",
+testBtn: "🧪 TESTUJ POWIADOMIENIA",
+testModalTitle: "Wysłaliśmy Ci testowe powiadomienie!",
+testModalDesc: "Sprawdź, czy dotarło i czy poprawnie wyświetliło się na liście wewnątrz aplikacji.",
+testSuccessMsg: "🧪 Test powiadomień zakończony sukcesem! System wewnętrznych dymków i alertów w Bąbelkowym Ogrodzie działa poprawnie i stabilnie.",
+langNames: {
+pl: "Polski (Polski)",
+en: "Angielski (English)",
+de: "Niemiecki (Deutsch)"
+}
+},
+en: {
+appTitle: "🫧 BUBBLE GARDEN",
+appSubtitle: "Premium Financial Garden",
+freeFunds: "Available funds",
+deposit: "💵 DEPOSIT",
+withdraw: "💸 SPEND",
+gardenWater: "💧 Garden water",
+waterPlants: "Water your plants",
+savingsGoals: "Savings goals",
+newGoal: "+ NEW",
+yourGarden: "🏡 Your garden",
+operation: "🏧 Operation",
+cancel: "Cancel",
+confirm: "Confirm",
+newGoalTitle: "🎯 New goal",
+createGoalBtn: "Create goal",
+historyTitle: "📊 History",
+noGoals: "No goals",
+noHistory: "No history",
+emptySoil: "Empty soil",
+plantPlant: "Plant",
+plantCarrot: "Carrot",
+plantTomato: "Tomato",
+plantOnion: "Onion",
+plantApple: "Apple tree",
+atmAmountPlh: "Amount €",
+atmReasonPlh: "Reason / dream / food (optional)",
+goalNamePlh: "E.g. Phone",
+goalTargetPlh: "Target amount €",
+langModalTitle: "🌐 Select language",
+langCloseBtn: "Close",
+alertNoMoney: "No money",
+alertNoFunds: "Insufficient funds",
+alertNoSeeds: "No seeds",
+alertNoWater: "No water",
+alertLowSavings: "Not enough savings",
+alertBought: "Bought: ",
+promptAddGoal: "How many € do you want to add?",
+histDeposit: "💵 Deposit",
+histWithdrawDefault: "💸 Withdrawal",
+histWithdrawReason: "💸 Spent on ",
+histGoal: "🫧 Contributed to dream ",
+histBuy: "🛍️ Bought dream ",
+goalBtnAdd: "💧 Add",
+goalBtnBuy: "🛍️ Buy",
+ntfDeposit: "Successfully deposited: +",
+ntfWithdraw: "Successfully spent: -",
+ntfWithdrawFor: " for: ",
+ntfNewGoal: "Added new goal: ",
+ntfGoalAdded: "Contributed to dream ",
+ntfGoalSuccess: "🎉 Goal achieved! Bought: ",
+ntfHarvest: "🌱 Plant fully grown! The vegetable batch was successfully harvested into your inventory.",
+appNotificationsLabel: "🔔 Notification Center",
+clearAllBtn: "CLEAR",
+noNotifications: "No alerts",
+statusActive: "In-app Notifications: ENABLED",
+statusDisabled: "In-app Notifications: DISABLED",
+showMore: "Show more",
+showLess: "Show less",
+testBtn: "🧪 TEST NOTIFICATIONS",
+testModalTitle: "We sent you a test notification!",
+testModalDesc: "Check if it arrived and displayed properly in the application log below.",
+testSuccessMsg: "🧪 Notification test successful! The internal bubble and alert log in Bubble Garden is working perfectly and stably.",
+langNames: {
+pl: "Polish (Polski)",
+en: "English (English)",
+de: "German (Deutsch)"
+}
+},
+de: {
+appTitle: "🫧 BLASENGARTEN",
+appSubtitle: "Premium Financial Garden",
+freeFunds: "Verfügbares Guthaben",
+deposit: "💵 EINZAHLEN",
+withdraw: "💸 AUSGEBEN",
+gardenWater: "💧 Gartenwasser",
+waterPlants: "Pflanzen gießen",
+savingsGoals: "Sparziele",
+newGoal: "+ NEU",
+yourGarden: "🏡 Ihr Garten",
+operation: "🏧 Operation",
+cancel: "Abbrechen",
+confirm: "Bestätigen",
+newGoalTitle: "🎯 Neues Ziel",
+createGoalBtn: "Ziel erstellen",
+historyTitle: "📊 Verlauf",
+noGoals: "Keine Ziele",
+noHistory: "Kein Verlauf",
+emptySoil: "Leerer Boden",
+plantPlant: "Pflanze",
+plantCarrot: "Karotte",
+plantTomato: "Tomate",
+plantOnion: "Zwiebel",
+plantApple: "Apfelbaum",
+atmAmountPlh: "Betrag €",
+atmReasonPlh: "Grund / Traum / Essen (optional)",
+goalNamePlh: "Z.B. Telefon",
+goalTargetPlh: "Zielbetrag €",
+langModalTitle: "🌐 Sprache wählen",
+langCloseBtn: "Schließen",
+alertNoMoney: "Kein Geld",
+alertNoFunds: "Nicht genügend Guthaben",
+alertNoSeeds: "Keine Samen",
+alertNoWater: "Kein Wasser",
+alertLowSavings: "Nicht genug Ersparnisse",
+alertBought: "Gekauft: ",
+promptAddGoal: "Wie viele € möchten Sie hinzufügen?",
+histDeposit: "💵 Einzahlung",
+histWithdrawDefault: "💸 Auszahlung",
+histWithdrawReason: "💸 Ausgegeben für ",
+histGoal: "🫧 Eingezahlt für den Traum ",
+histBuy: "🛍️ Traum gekauft ",
+goalBtnAdd: "💧 Hinzufügen",
+goalBtnBuy: "🛍️ Kaufen",
+ntfDeposit: "Erfolgreich eingezahlt: +",
+ntfWithdraw: "Erfolgreich ausgegeben: -",
+ntfWithdrawFor: " für: ",
+ntfNewGoal: "Neues Ziel hinzugefügt: ",
+ntfGoalAdded: "Eingezahlt für den Traum ",
+ntfGoalSuccess: "🎉 Ziel erreicht! Gekauft: ",
+ntfHarvest: "🌱 Pflanze ausgewachsen! Die Gemüsecharge wurde erfolgreich in Ihr Inventar geerntet.",
+appNotificationsLabel: "🔔 Benachrichtigungscenter",
+clearAllBtn: "LEEREN",
+noNotifications: "Keine Meldungen",
+statusActive: "In-App-Meldungen: AKTIVIERT",
+statusDisabled: "In-App-Meldungen: DEAKTIVIERT",
+showMore: "Mehr anzeigen",
+showLess: "Weniger anzeigen",
+testBtn: "🧪 BENACHRICHTIGUNGSTEST",
+testModalTitle: "Test-Benachrichtigung gesendet!",
+testModalDesc: "Überprüfen Sie, ob es in der Liste in der Anwendung angekommen ist.",
+testSuccessMsg: "🧪 Benachrichtigungstest erfolgreich! Das interne Blasen- und Alarmsystem im Blasengarten funktioniert einwandfrei.",
+langNames: {
+pl: "Polnisch (Polski)",
+en: "Englisch (English)",
+de: "Deutsch (Deutsch)"
+}
+}
+};
+
+// GLÓWNA FUNKCJA LOGOWANIA POWIADOMIEN (TYLKO WEWNĄTRZ APKI)
+function processNotification(message) {
+    // Jeśli użytkownik ręcznie wyłączył powiadomienia, ignorujemy wpis
+    if(data.notificationChoice === "denied") return;
+
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+    if(!data.notificationsLog) data.notificationsLog = [];
+    
+    // Dodajemy na początek listy wewnętrznej
+    data.notificationsLog.unshift({ id: Date.now() + Math.random(), text: message, time: timeStr });
+    
+    if(data.notificationsLog.length > 30) data.notificationsLog.pop();
+
+    renderAppNotifications();
+    save();
+}
+
+function triggerNotificationTest() {
+    const t = translations[data.lang];
+    
+    // 1. Wyślij tylko powiadomienie wewnętrzne (zapisuje się na liście)
+    processNotification(t.testSuccessMsg);
+    
+    // 2. Otwórz okienko informacyjne informujące o wysłaniu
+    document.getElementById("testNtfModal").style.display = "flex";
+}
+
+function closeTestNtfModal() {
+    document.getElementById("testNtfModal").style.display = "none";
+}
+
+function toggleNtfExpand(id) {
+    if(!data.expandedNotifications) data.expandedNotifications = {};
+    data.expandedNotifications[id] = !data.expandedNotifications[id];
+    renderAppNotifications();
+    save();
+}
+
+function deleteOneNotification(id) {
+    if(!data.notificationsLog) return;
+    data.notificationsLog = data.notificationsLog.filter(ntf => ntf.id !== id);
+    if(data.expandedNotifications && data.expandedNotifications[id]) {
+        delete data.expandedNotifications[id];
+    }
+    renderAppNotifications();
+    save();
+}
+
+function clearAllNotifications() {
+    data.notificationsLog = [];
+    data.expandedNotifications = {};
+    renderAppNotifications();
+    save();
+}
+
+function toggleNotificationsManually() {
+    if (data.notificationChoice === "granted") {
+        data.notificationChoice = "denied";
+    } else {
+        data.notificationChoice = "granted";
+    }
+    save();
+    updateStatusBadge();
+}
+
+function updateStatusBadge() {
+    const badge = document.getElementById("ntfStatusBadge");
+    const textEl = document.getElementById("ntfStatusText");
+    const pluskaEl = document.getElementById("ntfStatusPluska");
+    if (!badge || !textEl || !pluskaEl) return;
+    
+    const t = translations[data.lang];
+    
+    if (data.notificationChoice === "granted") {
+        textEl.innerText = t.statusActive;
+        pluskaEl.innerText = "🟢";
+        badge.style.background = "#dcfce7";
+        badge.style.borderColor = "#86efac";
+        badge.style.color = "#166534";
+    } else {
+        textEl.innerText = t.statusDisabled;
+        pluskaEl.innerText = "🔴";
+        badge.style.background = "#fee2e2";
+        badge.style.borderColor = "#fca5a5";
+        badge.style.color = "#991b1b";
+    }
+}
+
+function save(){
+localStorage.setItem("bubbleGardenFull",JSON.stringify(data));
+}
+
+function load(){
+const stored=localStorage.getItem("bubbleGardenFull");
+if(stored){
+data=JSON.parse(stored);
+if(!data.lang) data.lang = "pl";
+if(!data.notificationsLog) data.notificationsLog = [];
+if(!data.expandedNotifications) data.expandedNotifications = {};
+if(!data.notificationChoice) data.notificationChoice = "granted";
+}else{
+save();
+}
+}
+
+function resetApp(){
+localStorage.removeItem("bubbleGardenFull");
+location.reload();
+}
+
+function updateUI(){
+const t = translations[data.lang];
+
+document.getElementById("appTitle").innerText = t.appTitle;
+document.getElementById("appSubtitle").innerText = t.appSubtitle;
+document.getElementById("freeFundsLabel").innerText = t.freeFunds;
+document.getElementById("depositBtn").innerText = t.deposit;
+document.getElementById("withdrawBtn").innerText = t.withdraw;
+document.getElementById("gardenWaterLabel").innerText = t.gardenWater;
+document.getElementById("waterPlantsLabel").innerText = t.waterPlants;
+document.getElementById("savingsGoalsLabel").innerText = t.savingsGoals;
+document.getElementById("newGoalBtn").innerText = t.newGoal;
+document.getElementById("yourGardenLabel").innerText = t.yourGarden;
+
+document.getElementById("appNotificationsLabel").innerText = t.appNotificationsLabel;
+document.getElementById("clearAllNtfBtn").innerText = t.clearAllBtn || "WYCZYŚĆ";
+document.getElementById("testNtfBtn").innerText = t.testBtn;
+
+document.getElementById("testModalTitle").innerText = t.testModalTitle;
+document.getElementById("testModalDesc").innerText = t.testModalDesc;
+
+document.getElementById("atmTitle").innerText = t.operation;
+document.getElementById("atmCancelBtn").innerText = t.cancel;
+document.getElementById("atmConfirmBtn").innerText = t.confirm;
+document.getElementById("atmAmount").placeholder = t.atmAmountPlh;
+document.getElementById("atmReason").placeholder = t.atmReasonPlh;
+
+document.getElementById("newGoalTitle").innerText = t.newGoalTitle;
+document.getElementById("goalName").placeholder = t.goalNamePlh;
+document.getElementById("goalTarget").placeholder = t.goalTargetPlh;
+document.getElementById("createGoalBtn").innerText = t.createGoalBtn;
+
+document.getElementById("historyTitle").innerText = t.historyTitle;
+document.getElementById("langModalTitle").innerText = t.langModalTitle;
+document.getElementById("langCloseBtn").innerText = t.langCloseBtn;
+
+document.getElementById("balanceText").innerText=data.balance.toFixed(2);
+document.getElementById("waterText").innerText=data.water;
+
+updateStatusBadge();
+renderLangSelect();
+renderGoals();
+renderGarden();
+renderHistory();
+renderAppNotifications();
+
+save();
+}
+
+function openLangModal(){
+document.getElementById("langModal").style.display="flex";
+}
+
+function closeLangModal(){
+document.getElementById("langModal").style.display="none";
+}
+
+function changeLanguage(langCode){
+data.lang = langCode;
+updateUI();
+}
+
+function renderLangSelect(){
+const select = document.getElementById("langSelect");
+const t = translations[data.lang];
+select.innerHTML = `
+<option value="pl" ${data.lang==='pl'?'selected':''}>${t.langNames.pl}</option>
+<option value="en" ${data.lang==='en'?'selected':''}>${t.langNames.en}</option>
+<option value="de" ${data.lang==='de'?'selected':''}>${t.langNames.de}</option>
+`;
+}
+
+function openATM(type){
+atmMode=type;
+document.getElementById("atmModal").style.display="flex";
+}
+
+function closeATM(){
+document.getElementById("atmModal").style.display="none";
+}
+
+function confirmATM(){
+const t = translations[data.lang];
+const amount=parseFloat(document.getElementById("atmAmount").value);
+const reason=document.getElementById("atmReason").value;
+
+if(isNaN(amount)||amount<=0)return;
+
+const now=new Date();
+const date=now.toLocaleDateString()+" "+now.toLocaleTimeString();
+
+if(atmMode==="deposit"){
+data.balance+=amount;
+data.history.unshift({
+type:"deposit",
+text: t.histDeposit,
+amount:amount,
+date:date
+});
+processNotification(`${t.ntfDeposit}${amount.toFixed(2)} €`);
+}else{
+if(amount>data.balance){
+alert(t.alertNoMoney);
+return;
+}
+data.balance-=amount;
+data.history.unshift({
+type:"withdraw",
+text:reason ? `${t.histWithdrawReason}${reason}` : t.histWithdrawDefault,
+amount:amount,
+date:date
+});
+const details = reason ? `${t.ntfWithdrawFor}"${reason}"` : "";
+processNotification(`${t.ntfWithdraw}${amount.toFixed(2)} €${details}`);
+}
+
+document.getElementById("atmAmount").value="";
+document.getElementById("atmReason").value="";
+closeATM();
+updateUI();
+}
+
+function openGoalModal(){
+document.getElementById("goalModal").style.display="flex";
+}
+
+function closeGoalModal(){
+document.getElementById("goalModal").style.display="none";
+}
+
+function createGoal(){
+const t = translations[data.lang];
+const name=document.getElementById("goalName").value;
+const target=parseFloat(document.getElementById("goalTarget").value);
+
+if(!name||isNaN(target)||target<=0)return;
+
+data.goals.push({
+id:Date.now(),
+name:name,
+target:target,
+current:0
+});
+
+processNotification(`${t.ntfNewGoal}"${name}" (${target.toFixed(0)} €)`);
+document.getElementById("goalName").value="";
+document.getElementById("goalTarget").value="";
+closeGoalModal();
+updateUI();
+}
+
+function addToGoal(id){
+const t = translations[data.lang];
+const val=prompt(t.promptAddGoal);
+const amount=parseFloat(val);
+
+if(isNaN(amount)||amount<=0)return;
+if(amount>data.balance){
+alert(t.alertNoFunds);
+return;
+}
+
+const goal=data.goals.find(g=>g.id===id);
+goal.current+=amount;
+data.balance-=amount;
+data.water+=Math.max(1,Math.floor(amount/5));
+
+data.history.unshift({
+type:"goal",
+text: `${t.histGoal}${goal.name}`,
+amount:amount,
+date:new Date().toLocaleString()
+});
+
+processNotification(`${t.ntfGoalAdded}"${goal.name}": +${amount.toFixed(2)} €`);
+updateUI();
+}
+
+function buyGoal(id){
+const t = translations[data.lang];
+const goal=data.goals.find(g=>g.id===id);
+
+if(goal.current<goal.target){
+alert(t.alertLowSavings);
+return;
+}
+
+goal.current-=goal.target;
+data.history.unshift({
+type:"buy",
+text: `${t.histBuy}${goal.name}`,
+amount:goal.target,
+date:new Date().toLocaleString()
+});
+
+processNotification(`${t.ntfGoalSuccess}"${goal.name}" 🛍️`);
+updateUI();
+}
+
+function removeGoal(id){
+data.goals=data.goals.filter(g=>g.id!==id);
+updateUI();
+}
+
+function renderGoals(){
+const t = translations[data.lang];
+const wrap=document.getElementById("goalsWrap");
+wrap.innerHTML="";
+
+if(data.goals.length===0){
+wrap.innerHTML=`
+<div style="background:white;border-radius:24px;padding:30px;text-align:center;color:#94a3b8;border:1px dashed #cbd5e1;">
+${t.noGoals}
+</div>
+`;
+return;
+}
+
+data.goals.forEach(goal=>{
+const percent=Math.min(Math.round((goal.current/goal.target)*100),100);
+let bubblesHTML="";
+
+for(let i=0;i<8;i++){
+const colors=["#38bdf8","#22c55e","#f472b6","#facc15","#a78bfa"];
+bubblesHTML+=`
+<div class="bubble" style="width:${6+Math.random()*10}px; height:${6+Math.random()*10}px; left:${Math.random()*100}%; bottom:-20px; background:${colors[Math.floor(Math.random()*colors.length)]}; animation-duration:${3+Math.random()*3}s; animation-delay:${Math.random()*2}s;"></div>
+`;
+}
+
+const top=100-percent;
+const done=percent>=100;
+
+wrap.innerHTML+=`
+<div class="goalCard">
+<div style="font-weight:900;font-size:16px;text-align:center;">${goal.name}</div>
+<div style="font-size:11px;color:#64748b;text-align:center;margin-top:4px;">${goal.current.toFixed(0)} € z ${goal.target.toFixed(0)} €</div>
+<div style="width:170px; height:170px; margin:16px auto; border-radius:999px; background:#f8fafc; padding:6px; position:relative; overflow:hidden; border:5px solid #67e8f9;">
+<div style="width:100%; height:100%; border-radius:999px; overflow:hidden; position:relative; background:white;">
+<div class="wave" style="top:${top}%; background:linear-gradient(to bottom, ${done ? "#34d399" : "#34d399"}, ${done ? "#10b981" : "#2563eb"});"></div>
+${bubblesHTML}
+<div style="position:absolute; inset:0; display:flex; justify-content:center; align-items:center; font-size:34px; font-weight:900; color:white; z-index:5; text-shadow:0 2px 8px rgba(0,0,0,.2);">${percent}%</div>
+</div>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+<button onclick="addToGoal(${goal.id})" class="mainBtn" style="background:#cffafe;color:#0891b2;font-size:11px;">${t.goalBtnAdd}</button>
+<button onclick="buyGoal(${goal.id})" class="mainBtn" style="background:#10b981;color:white;font-size:11px;">${t.goalBtnBuy}</button>
+<button onclick="removeGoal(${goal.id})" class="mainBtn" style="background:#fee2e2;color:#ef4444;font-size:11px;">✕</button>
+</div>
+</div>
+`;
+});
+}
+
+function renderGarden(){
+const t = translations[data.lang];
+const wrap=document.getElementById("gardenWrap");
+wrap.innerHTML="";
+
+data.garden.forEach((slot,index)=>{
+if(!slot.planted){
+wrap.innerHTML+=`
+<div class="slot" onclick="plantSeed(${index})">
+<div style="font-size:52px;">🟤</div>
+<div style="margin-top:10px;font-weight:900;font-size:12px;">${t.emptySoil}</div>
+</div>
+`;
+}else{
+wrap.innerHTML+=`
+<div class="slot" onclick="waterPlant(${index})">
+<div style="font-size:52px;">${slot.emoji}</div>
+<div style="margin-top:10px;font-weight:900;font-size:12px;">${slot.translatedName || slot.name}</div>
+<div style="width:100%;height:10px;background:#e2e8f0;border-radius:999px;margin-top:10px;overflow:hidden;">
+<div style="width:${slot.progress}%; height:100%; background:#10b981;"></div>
+</div>
+<div style="font-size:11px;margin-top:6px;color:#64748b;">${slot.progress}%</div>
+</div>
+`;
+}
+});
+}
+
+function plantSeed(index){
+const t = translations[data.lang];
+if(data.inventory.length===0){
+alert(t.alertNoSeeds);
+return;
+}
+
+const emoji=data.inventory.shift();
+let name="Roślina";
+let transName = t.plantPlant;
+
+if(emoji==="🥕") { name="Marchewka"; transName = t.plantCarrot; }
+if(emoji==="🍅") { name="Pomidor"; transName = t.plantTomato; }
+if(emoji==="🧅") { name="Cebula"; transName = t.plantOnion; }
+if(emoji==="🍎") { name="Jabłoń"; transName = t.plantApple; }
+
+data.garden[index]={
+planted:true,
+emoji:emoji,
+name:name,
+translatedName: transName,
+progress:0
+};
+updateUI();
+}
+
+function waterPlant(index){
+const t = translations[data.lang];
+const slot=data.garden[index];
+
+if(!slot.planted)return;
+if(data.water<=0){
+alert(t.alertNoWater);
+return;
+}
+
+data.water-=1;
+slot.progress+=10;
+
+if(slot.progress>=100){
+slot.progress=100;
+data.inventory.push("🥕");
+// POWIADOMIENIE O WARCE WARZYW TRAFIA NA LISTĘ:
+processNotification(t.ntfHarvest);
+setTimeout(()=>{
+data.garden[index]={planted:false};
+updateUI();
+},500);
+}
+updateUI();
+}
+
+function openHistory(){
+document.getElementById("historyModal").style.display="flex";
+}
+
+function closeHistory(){
+document.getElementById("historyModal").style.display="none";
+}
+
+function renderHistory(){
+const t = translations[data.lang];
+const wrap=document.getElementById("historyWrap");
+wrap.innerHTML="";
+
+if(data.history.length===0){
+wrap.innerHTML=`<div style="text-align:center;color:#94a3b8;padding:20px;">${t.noHistory}</div>`;
+return;
+}
+
+data.history.forEach(item=>{
+wrap.innerHTML+=`
+<div class="histItem">
+<div>
+<div style="font-weight:900;font-size:13px;">${item.text}</div>
+<div style="font-size:10px;color:#64748b;margin-top:3px;">${item.date}</div>
+</div>
+<div style="font-weight:900; font-size:16px; color:${item.type==="deposit"?"#10b981":"#ef4444"};">${item.type==="deposit"?"+":"-"}${item.amount.toFixed(2)} €</div>
+</div>
+`;
+});
+}
+
+function renderAppNotifications() {
+    const t = translations[data.lang];
+    const wrap = document.getElementById("appNotificationsWrap");
+    if(!wrap) return;
+
+    wrap.innerHTML = "";
+    
+    if(!data.notificationsLog || data.notificationsLog.length === 0) {
+        wrap.innerHTML = `<div style="text-align:center; color:#94a3b8; font-size:11px; padding:10px;">${t.noNotifications}</div>`;
+        return;
+    }
+
+    if(!data.expandedNotifications) data.expandedNotifications = {};
+
+    data.notificationsLog.forEach(ntf => {
+        const isLong = ntf.text.length > 60;
+        const isExpanded = data.expandedNotifications[ntf.id] || false;
+        
+        let displayText = ntf.text;
+        let toggleBtnHTML = "";
+
+        if (isLong) {
+            if (!isExpanded) {
+                displayText = ntf.text.substring(0, 55) + "... ";
+                toggleBtnHTML = `<button onclick="toggleNtfExpand(${ntf.id})" style="background:none; border:none; color:#06b6d4; font-size:10px; font-weight:800; cursor:pointer; padding:0; margin-left:4px; text-decoration:underline; display:inline-block;">${t.showMore || "Pokaż więcej"}</button>`;
+            } else {
+                displayText = ntf.text + " ";
+                toggleBtnHTML = `<button onclick="toggleNtfExpand(${ntf.id})" style="background:none; border:none; color:#64748b; font-size:10px; font-weight:800; cursor:pointer; padding:0; margin-left:4px; text-decoration:underline; display:inline-block;">${t.showLess || "Pokaż mniej"}</button>`;
+            }
+        }
+
+        wrap.innerHTML += `
+            <div style="background:white; border-radius:14px; padding:10px 14px; display:flex; justify-content:space-between; align-items:start; border:1px solid #e2e8f0; font-size:12px; font-weight:700; color:#334155;">
+                <div style="flex:1; padding-right:8px; line-height: 1.4; word-break: break-word;">
+                    <span>${displayText}</span>${toggleBtnHTML}
+                </div>
+                <div style="display:flex; align-items:center; gap:10px; flex-shrink:0; margin-top: 1px;">
+                    <div style="font-size:10px; color:#94a3b8; font-weight:500;">${ntf.time}</div>
+                    <button onclick="deleteOneNotification(${ntf.id})" style="background:none; border:none; color:#cbd5e1; font-weight:900; font-size:12px; cursor:pointer; padding:2px 4px; transition:0.2s;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#cbd5e1'">✕</button>
+                </div>
+            </div>
+        `;
+    });
+}
+
+load();
+updateUI();
+
+</script>
+
+</body>
+</html>
