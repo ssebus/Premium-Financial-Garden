@@ -1,0 +1,1191 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Belkowy Ogród Finansowy PRO + Realistyczny Bankomat</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        body {
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            font-family: sans-serif;
+            touch-action: none;
+            background: linear-gradient(135deg, #e0f2fe 0%, #f8fafc 50%, #e0f2fe 100%);
+            background-size: 200% 200%;
+            animation: bgMove 12s ease infinite;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            position: relative;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        @keyframes bgMove {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .app {
+            width: 100%;
+            max-width: 420px;
+            height: 96vh;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 38px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 25px 60px rgba(15, 23, 42, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .scroll-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            padding-bottom: 100px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .topbar {
+            padding: 20px 24px;
+            background: linear-gradient(135deg, #0284c7, #0369a1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+            z-index: 10;
+            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.15);
+        }
+
+        /* POWIADOMIENIA */
+        .notification-container {
+            position: absolute;
+            top: 75px;
+            left: 0;
+            right: 0;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            pointer-events: none;
+            padding: 0 20px;
+        }
+
+        .in-app-toast {
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(8px);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 600;
+            box-shadow: 0 12px 32px rgba(15, 23, 42, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            transform: translateY(-20px);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: auto;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            max-width: 340px;
+        }
+
+        .in-app-toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        /* KATALOG GIER / ZAKŁADKI */
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            font-weight: 700;
+            font-size: 13px;
+            text-align: center;
+            transition: all 0.2s;
+            cursor: pointer;
+            border-radius: 14px;
+            color: #64748b;
+        }
+
+        .tab-btn.active {
+            background: #f1f5f9;
+            color: #0284c7;
+        }
+
+        /* --- MECHANIZM REALISTYCZNEGO BANKOMATU (POPRAWIONY) --- */
+        .atm-machine {
+            background: linear-gradient(135deg, #0f172a, #1e293b);
+            border: 3px solid #334155;
+            border-radius: 24px;
+            padding: 20px;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.6), 0 15px 35px rgba(0, 0, 0, 0.4);
+        }
+
+        .atm-screen {
+            background: #020617;
+            border: 2px solid #334155;
+            border-radius: 16px;
+            padding: 14px;
+            font-family: monospace;
+            box-shadow: inset 0 0 15px rgba(0, 212, 255, 0.2);
+        }
+
+        .atm-slot-container {
+            position: relative;
+            width: 100%;
+            height: 120px; /* Zapewnia odpowiednią przestrzeń do ciągnięcia */
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            overflow: visible;
+            margin-top: 15px;
+        }
+
+        /* Plastikowa obudowa szczeliny - musi być NA WIERZCHU (z-index: 10) */
+        .atm-slot {
+            width: 210px;
+            height: 32px;
+            background: #020617;
+            border: 2px solid #10b981;
+            border-radius: 6px;
+            box-shadow: inset 0 4px 6px rgba(0,0,0,0.9), 0 2px 4px rgba(0,0,0,0.4);
+            position: relative;
+            z-index: 10; 
+        }
+
+        /* Podajnik pieniędzy - ukryty pod szczeliną (z-index: 5) */
+        .money-dispenser {
+            position: absolute;
+            top: 4px; /* Elegancko schowane i wycentrowane w szczelinie */
+            z-index: 5; 
+            touch-action: none;
+            cursor: grab;
+            transition: transform 0.1s ease-out;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            will-change: transform;
+        }
+
+        .money-dispenser:active {
+            cursor: grabbing;
+        }
+
+        /* STYLIZACJA BANKNOTÓW */
+        .real-bill {
+            width: 160px;
+            height: 85px;
+            border-radius: 4px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.5), inset 0 0 12px rgba(0,0,0,0.15);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 6px;
+            font-weight: bold;
+            border: 1px solid rgba(0,0,0,0.2);
+        }
+
+        .bill-10 { background: linear-gradient(135deg, #f87171, #ef4444); color: #7f1d1d; }
+        .bill-20 { background: linear-gradient(135deg, #60a5fa, #3b82f6); color: #1e3a8a; }
+        .bill-50 { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #78350f; }
+        .bill-100 { background: linear-gradient(135deg, #34d399, #10b981); color: #064e3b; }
+        .bill-200 { background: linear-gradient(135deg, #ca8a04, #a16207); color: #451a03; }
+        .bill-500 { background: linear-gradient(135deg, #c084fc, #a855f7); color: #4c1d95; }
+
+        /* STYLIZACJA MONET */
+        .real-coin {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            color: #2d3748;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.6), inset 0 2px 4px rgba(255,255,255,0.4);
+        }
+
+        .coin-gold-silver {
+            background: radial-gradient(circle, #fcd34d 0%, #d97706 45%, #cbd5e1 50%, #94a3b8 100%);
+            border: 2px dashed #b45309;
+        }
+        .coin-silver-gold {
+            background: radial-gradient(circle, #e2e8f0 0%, #cbd5e1 45%, #fef08a 50%, #ca8a04 100%);
+            border: 2px dashed #64748b;
+        }
+        .coin-bronze {
+            background: radial-gradient(circle, #fed7aa 0%, #ea580c 100%);
+            border: 2px solid #9a3412;
+        }
+
+        /* STREFA URUCHOMIENIA ODBIORU */
+        .atm-drop-zone {
+            width: 100%;
+            height: 130px;
+            border: 2px dashed #475569;
+            border-radius: 16px;
+            background: rgba(15, 23, 42, 0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s;
+        }
+
+        .atm-drop-zone.drag-over {
+            border-color: #10b981;
+            background: rgba(16, 185, 129, 0.1);
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.2);
+        }
+
+        /* DIALOGI / MODALE */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(4px);
+            z-index: 999;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+        }
+
+        .modal-sheet {
+            width: 100%;
+            max-width: 420px;
+            background: white;
+            border-top-left-radius: 32px;
+            border-top-right-radius: 32px;
+            padding: 24px;
+            box-shadow: 0 -15px 40px rgba(0,0,0,0.1);
+            animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="firstTimeLangModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[9999] flex justify-center align-items center p-4">
+        <div class="bg-white rounded-3xl p-6 w-full max-width-xs text-center shadow-2xl">
+            <h2 class="text-xl font-bold text-slate-800 mb-2">Welcome / Witamy / Willkommen</h2>
+            <p class="text-sm text-slate-500 mb-6">Choose your language / Wybierz język / Wähle deine Sprache:</p>
+            <div class="flex flex-col gap-3">
+                <button onclick="setAppLanguage('pl')" class="w-full py-3 bg-sky-600 text-white rounded-xl font-semibold hover:bg-sky-700 transition">Polski</button>
+                <button onclick="setAppLanguage('en')" class="w-full py-3 bg-sky-600 text-white rounded-xl font-semibold hover:bg-sky-700 transition">English</button>
+                <button onclick="setAppLanguage('de')" class="w-full py-3 bg-sky-600 text-white rounded-xl font-semibold hover:bg-sky-700 transition">Deutsch</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="app">
+        <div class="topbar">
+            <div>
+                <h1 class="text-xs uppercase tracking-wider opacity-75 font-bold" id="lblBrand">Belkowy Ogród Finansowy</h1>
+                <p class="text-xl font-black tracking-tight flex items-center gap-1">
+                    <span>PRO</span>
+                    <span class="text-xs bg-emerald-500 text-white px-1.5 py-0.5 rounded font-mono" id="lblPremiumBadge">Premium</span>
+                </p>
+            </div>
+            <div class="flex items-center gap-3">
+                <button onclick="openHistory()" class="p-2 bg-white/10 hover:bg-white/20 rounded-xl transition">
+                    📋
+                </button>
+                <button onclick="resetAppState()" class="p-2 bg-rose-500/20 text-rose-200 hover:bg-rose-500/30 rounded-xl transition text-xs font-bold">
+                    🔄 Reset
+                </p>
+            </div>
+        </div>
+
+        <div class="notification-container" id="notificationContainer"></div>
+
+        <div class="p-2 bg-slate-100/80 mx-4 mt-4 rounded-2s flex gap-1 border border-slate-200/50 rounded-2xl">
+            <div onclick="switchTab('garden')" id="tabGarden" class="tab-btn active">🌱 Ogród</div>
+            <div onclick="switchTab('atm')" id="tabAtm" class="tab-btn">🏧 Bankomat</div>
+        </div>
+
+        <div class="scroll-content">
+            <div id="viewGarden" class="flex flex-col gap-5">
+                <div class="bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl p-6 text-white relative overflow-hidden shadow-lg border border-slate-700">
+                    <p class="text-xs uppercase tracking-widest text-slate-400 font-bold mb-1" id="lblAvailableFunds">Wolne Środki</p>
+                    <p class="text-3xl font-black font-mono text-sky-400"><span id="walletText">0.00</span><span class="text-lg ml-1">€</span></p>
+                    <div class="grid grid-cols-2 gap-3 mt-4 pt-4 border-t border-slate-700/50">
+                        <div>
+                            <p class="text-[10px] uppercase text-slate-400 font-bold mb-0.5" id="lblTotalSavings">Skarbonka Celów</p>
+                            <p class="text-base font-bold font-mono text-emerald-400"><span id="savingsText">0.00</span> €</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-[10px] uppercase text-slate-400 font-bold mb-0.5" id="lblActiveGoals">Aktywne Cele</p>
+                            <p class="text-base font-bold font-mono text-amber-400" id="activeGoalsCountText">0</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-blue-50/50 border border-blue-100 rounded-2xl p-4 flex flex-col gap-2">
+                    <p class="text-xs font-bold text-blue-800 uppercase tracking-wider mb-1" id="lblFastOp">Zarządzanie gotówką (Szybka operacja)</p>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="triggerSetupAtm('deposit')" class="py-2.5 bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold rounded-xl transition shadow-sm">📥 WPŁAĆ KASĘ</button>
+                        <button onclick="triggerSetupAtm('withdraw')" class="py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition shadow-sm">🏧 WYDAJ PIENIĄDZ</button>
+                    </div>
+                </div>
+
+                <div class="bg-white border border-slate-200/60 rounded-3xl p-5 shadow-sm">
+                    <div class="flex justify-between items-center mb-4">
+                        <div>
+                            <h3 class="font-bold text-slate-800" id="lblWaterTitle">Woda ogrodowa</h3>
+                            <p class="text-xs text-slate-400 font-mono" id="lblWaterStatus">Konewka: w pełni naładowana</p>
+                        </div>
+                        <span class="text-2xl animate-bounce">💧</span>
+                    </div>
+                    <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden mb-4">
+                        <div class="bg-sky-500 h-full w-full transition-all duration-500" id="waterBar"></div>
+                    </div>
+                    <button onclick="refillWater()" class="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition" id="btnRefillWater">Napełnij zbiornik wody</button>
+                </div>
+
+                <div class="bg-amber-950/10 border border-amber-900/10 rounded-3xl p-5">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-bold text-slate-900" id="lblGardenTitle">Podlewaj rośliny i zbieraj oszczędności</h3>
+                        <span class="text-xs bg-amber-800 text-amber-100 px-2 py-0.5 rounded-full font-bold font-mono" id="inventoryCount">0 nasion</span>
+                    </div>
+                    <div class="grid grid-cols-3 gap-3" id="gardenGrid">
+                        </div>
+                </div>
+
+                <div class="bg-white border border-slate-200/60 rounded-3xl p-5 shadow-sm">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="font-bold text-slate-800" id="lblGoalsTitle">Cele oszczędnościowe</h3>
+                        <button onclick="openNewGoalModal()" class="text-xs bg-sky-50 text-sky-600 px-2.5 py-1 rounded-lg font-bold hover:bg-sky-100">+ NOWY CEL</button>
+                    </div>
+                    <div class="flex flex-col gap-3" id="goalsContainer">
+                        </div>
+                </div>
+
+                <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col gap-2">
+                    <p class="text-xs font-bold text-slate-500 uppercase tracking-wider" id="lblTestNtf">Testuj powiadomienia i alerty</p>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="triggerInAppNotification('Sukces! Twoje finanse działają poprawnie.', 'success')" class="py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 text-[11px] font-bold rounded-lg transition">TESTUJ SUKCES</button>
+                        <button onclick="triggerInAppNotification('Błąd! Brak środków na realizację zadania.', 'error')" class="py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 text-[11px] font-bold rounded-lg transition">TESTUJ BŁĄD</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="viewAtm" class="flex flex-col gap-4 hidden">
+                <div class="atm-machine text-white flex flex-col gap-4">
+                    <div class="atm-screen text-emerald-400">
+                        <div class="text-[11px] tracking-widest text-sky-400 font-mono uppercase mb-1" id="atmScreenStatus">STATUS: OCZEKIWANIE NA AKCJĘ</div>
+                        <div class="text-lg font-bold font-mono" id="atmScreenAmount">Do rozliczenia: 0.00 €</div>
+                        <div class="text-xs text-slate-400 mt-2 border-t border-slate-800 pt-2 font-sans" id="atmScreenInstruction">Instrukcja: Wybierz opcję wpłaty lub wypłaty w ogrodzie.</div>
+                    </div>
+
+                    <div class="atm-slot-container">
+                        <div class="atm-slot"></div>
+                        <div class="money-dispenser" id="atmDraggableMoney">
+                            </div>
+                    </div>
+
+                    <div class="atm-drop-zone" id="atmDropZone">
+                        <div class="text-center p-4">
+                            <span class="text-3xl block mb-2 animate-pulse" id="atmDropZoneIcon">📥</span>
+                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider" id="atmDropZoneText">Przeciągnij tutaj obiekt</p>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-between items-center pt-2 border-t border-slate-800 text-[11px] text-slate-500 font-mono">
+                        <span>ATM MODEL: B-GARDEN PRO v4</span>
+                        <span class="text-purple-400 animate-pulse font-bold">● AI-BOT READY</span>
+                    </div>
+                </div>
+
+                <button onclick="switchTab('garden')" class="w-full py-3 bg-slate-800 text-white font-bold text-xs rounded-xl transition hover:bg-slate-900" id="btnAtmAbort">Anuluj operację i wróć do ogrodu</button>
+            </div>
+        </div>
+
+        <div class="absolute bottom-0 left-0 right-0 p-4 bg-white/90 border-t border-slate-200/50 text-center text-[10px] uppercase tracking-widest font-bold text-slate-400 pointer-events-none z-20">
+            IHR GARTEN — ZAUFANY PARTNER FINANSOWY
+        </div>
+    </div>
+
+    <div id="newGoalModal" class="modal-overlay hidden">
+        <div class="modal-sheet">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-slate-900" id="lblModalGoalTitle">Nowy cel oszczędnościowy</h3>
+                <button onclick="closeNewGoalModal()" class="text-slate-400 font-bold text-xl">&times;</button>
+            </div>
+            <div class="flex flex-col gap-4">
+                <div>
+                    <label class="text-xs font-bold text-slate-500 uppercase block mb-1" id="lblModalGoalName">Nazwa celu</label>
+                    <input type="text" id="goalNameInput" placeholder="Np. Telefon, Rowerek..." class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-medium focus:outline-sky-500">
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-slate-500 uppercase block mb-1" id="lblModalGoalAmount">Kwota docelowa (€)</label>
+                    <input type="number" id="goalAmountInput" placeholder="10.00" step="0.01" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-mono font-bold focus:outline-sky-500">
+                </div>
+                <button onclick="createNewGoalSubmit()" class="w-full py-3.5 bg-sky-600 hover:bg-sky-700 text-white rounded-xl font-bold transition shadow-md" id="btnModalGoalCreate">Stwórz cel finansowy</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="historyModal" class="modal-overlay hidden">
+        <div class="modal-sheet" style="height: 70vh; display: flex; flex-direction: column;">
+            <div class="flex justify-between items-center mb-3">
+                <h3 class="text-lg font-bold text-slate-900" id="lblModalHistTitle">Centrum Danych i Rejestr Transakcji</h3>
+                <button onclick="closeHistory()" class="text-slate-400 font-bold text-xl">&times;</button>
+            </div>
+            <div class="flex-1 overflow-y-auto pr-1 flex flex-col gap-2 mb-4" id="historyItemsWrapper">
+                </div>
+            <button onclick="clearAllHistoryData()" class="w-full py-3 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl transition" id="btnModalHistClear">WYCZYŚĆ WSZYSTKIE DANE Z REJESTRU</button>
+        </div>
+    </div>
+
+    <div id="atmSetupModal" class="modal-overlay hidden">
+        <div class="modal-sheet">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-slate-900" id="lblAtmSetupTitle">Konfiguracja operacji gotówkowej</h3>
+                <button onclick="closeAtmSetup()" class="text-slate-400 font-bold text-xl">&times;</button>
+            </div>
+            <div class="flex flex-col gap-4">
+                <div id="atmSetupAmountBlock">
+                    <label class="text-xs font-bold text-slate-500 uppercase block mb-1" id="lblAtmSetupAmount">Kwota operacji (€)</label>
+                    <input type="number" id="atmSetupAmountInput" placeholder="20.00" step="0.01" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-mono font-bold">
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-slate-500 uppercase block mb-1" id="lblAtmSetupDenom">Wybierz fizyczny nominał do podajnika</label>
+                    <select id="atmSetupDenomSelect" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm">
+                        </select>
+                </div>
+                <button onclick="startAtmEngineExecution()" class="w-full py-3.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold transition shadow-md" id="btnAtmSetupConfirm">Zatwierdź i przejdź do modułu bankomatu</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // SŁOWNIK TŁUMACZEŃ DLA CAŁEGO INTERFEJSU
+        const translations = {
+            pl: {
+                brand: "Belkowy Ogród Finansowy",
+                availableFunds: "Wolne Środki",
+                totalSavings: "Skarbonka Celów",
+                activeGoals: "Aktywne Cele",
+                fastOp: "Zarządzanie gotówką (Szybka operacja)",
+                waterTitle: "Woda ogrodowa",
+                waterStatus: "Konewka: w pełni naładowana",
+                btnRefill: "Napełnij zbiornik wody",
+                gardenTitle: "Podlewaj rośliny i zbieraj oszczędności",
+                goalsTitle: "Cele oszczędnościowe",
+                testNtf: "Testuj powiadomienia i alerty",
+                atmStatusWait: "STATUS: OCZEKIWANIE NA AKCJĘ",
+                atmStatusActive: "STATUS: AKTYWNA OPERACJA ATM",
+                atmStatusSuccess: "STATUS: ZAKOŃCZONO SUKCESEM 🎉",
+                atmAmountToSettle: "Do rozliczenia: ",
+                atmAmountRemaining: "Pozostało: ",
+                atmInstrWait: "Instrukcja: Wybierz opcję wpłaty lub wypłaty w ogrodzie.",
+                atmInstrPull: "Instrukcja: Chwyć obiekt w szczelinie i wyciągnij w dół! 📥",
+                atmInstrPush: "Instrukcja: Chwyć obiekt z podajnika i wsuń do góry do szczeliny! 📤",
+                atmDropTextPull: "Przeciągnij tutaj obiekt do dołu",
+                atmDropTextPush: "Fizyczna szczelina przyjmująca kasę",
+                btnAtmCancel: "Anuluj operację i wróć do ogrodu",
+                modalGoalTitle: "Nowy cel oszczędnościowe",
+                modalGoalName: "Nazwa celu",
+                modalGoalAmount: "Kwota docelowa (€)",
+                btnGoalCreate: "Stwórz cel finansowy",
+                modalHistTitle: "Centrum Danych i Rejestr Transakcji",
+                btnHistClear: "WYCZYŚĆ WSZYSTKIE DANE Z REJESTRU",
+                atmSetupTitle: "Konfiguracja operacji gotówkowej",
+                atmSetupAmount: "Kwota operacji (€)",
+                atmSetupDenom: "Wybierz fizyczny nominał do podajnika",
+                btnAtmConfirm: "Zatwierdź i przejdź do modułu bankomatu",
+                ntfNoMoney: "Nie masz tylu pieniędzy w portfelu!",
+                ntfNoSeeds: "Brak nasion! Poczekaj na automatyczne zbiory.",
+                ntfNoWater: "Brak wody w konewce! Napełnij zbiornik.",
+                ntfGoalAchieved: "Cel oszczędnościowy został osiągnięty! Gratulacje! 🌟",
+                ntfAtmSuccess: "Pomyślnie rozliczono operację gotówkową w bankomacie!",
+                historyEmpty: "Brak zapisanych transakcji w rejestrze.",
+                historyDeposit: "Wpłata w bankomacie",
+                historyWithdraw: "Wypłata z bankomatu",
+                historyWater: "Podlanie grządki",
+                historyHarvest: "Zbiór oszczędności z roślinki"
+            },
+            en: {
+                brand: "Beam Financial Garden",
+                availableFunds: "Available Funds",
+                totalSavings: "Goal Savings Bank",
+                activeGoals: "Active Goals",
+                fastOp: "Cash Management (Fast Operation)",
+                waterTitle: "Garden Water",
+                waterStatus: "Watering can: Fully charged",
+                btnRefill: "Refill Water Tank",
+                gardenTitle: "Water plants & harvest savings",
+                goalsTitle: "Savings Goals",
+                testNtf: "Test notifications & alerts",
+                atmStatusWait: "STATUS: WAITING FOR ACTION",
+                atmStatusActive: "STATUS: ACTIVE ATM OPERATION",
+                atmStatusSuccess: "STATUS: SUCCESSFUL DISPENSE 🎉",
+                atmAmountToSettle: "To settle: ",
+                atmAmountRemaining: "Remaining: ",
+                atmInstrWait: "Instruction: Choose a deposit or withdrawal option in the garden.",
+                atmInstrPull: "Instruction: Grab the cash in the slot and pull it down! 📥",
+                atmInstrPush: "Instruction: Grab the cash and push it up into the slot! 📤",
+                atmDropTextPull: "Drag the object down here",
+                atmDropTextPush: "Physical deposit slot accepting cash",
+                btnAtmCancel: "Cancel operation and return to garden",
+                modalGoalTitle: "New Savings Goal",
+                modalGoalName: "Goal Name",
+                modalGoalAmount: "Target Amount (€)",
+                btnGoalCreate: "Create Financial Goal",
+                modalHistTitle: "Data Center & Transaction Register",
+                btnHistClear: "CLEAR ALL REGISTER DATA",
+                atmSetupTitle: "Cash Operation Setup",
+                atmSetupAmount: "Operation Amount (€)",
+                atmSetupDenom: "Choose physical denomination for dispenser",
+                btnAtmConfirm: "Confirm and proceed to ATM module",
+                ntfNoMoney: "You don't have that much money in your wallet!",
+                ntfNoSeeds: "No seeds! Wait for auto-harvest.",
+                ntfNoWater: "No water in the watering can! Refill tank.",
+                ntfGoalAchieved: "Savings goal achieved! Congratulations! 🌟",
+                ntfAtmSuccess: "Successfully settled cash operation in ATM!",
+                historyEmpty: "No recorded transactions in the log.",
+                historyDeposit: "ATM Deposit",
+                historyWithdraw: "ATM Withdrawal",
+                historyWater: "Watered garden patch",
+                historyHarvest: "Harvested savings from plant"
+            },
+            de: {
+                brand: "Balken Finanzgarten",
+                availableFunds: "Verfügbares Guthaben",
+                totalSavings: "Ziele-Sparschwein",
+                activeGoals: "Aktive Ziele",
+                fastOp: "Bargeldverwaltung (Schnelloperation)",
+                waterTitle: "Gartenwasser",
+                waterStatus: "Gießkanne: Voll aufgeladen",
+                btnRefill: "Wassertank auffüllen",
+                gardenTitle: "Pflanzen gießen & Ersparnisse ernten",
+                goalsTitle: "Sparziele",
+                testNtf: "Testen Sie Benachrichtigungen & Alerte",
+                atmStatusWait: "STATUS: WARTEN AUF AKTION",
+                atmStatusActive: "STATUS: AKTIVE ATM-OPERATION",
+                atmStatusSuccess: "STATUS: ERFOLGREICH BEENDET 🎉",
+                atmAmountToSettle: "Auszuzahlen: ",
+                atmAmountRemaining: "Restbetrag: ",
+                atmInstrWait: "Anweisung: Wählen Sie eine Ein- oder Auszahlungsoption im Garten.",
+                atmInstrPull: "Anweisung: Ziehen Sie das Geld aus dem Schlitz nach unten heraus! 📥",
+                atmInstrPush: "Anweisung: Schieben Sie das Geld nach oben in den Schlitz hinein! 📤",
+                atmDropTextPull: "Ziehen Sie das Objekt hierher nach unten",
+                atmDropTextPush: "Physischer Einzahlungsschlitz für Bargeld",
+                btnAtmCancel: "Auszahlung abbrechen und zurück zum Garten",
+                modalGoalTitle: "Neues Sparziel",
+                modalGoalName: "Zielname",
+                modalGoalAmount: "Zielbetrag (€)",
+                btnGoalCreate: "Sparziel erstellen",
+                modalHistTitle: "Datenzentrum & Transaktionsprotokoll",
+                btnHistClear: "ALLE PROTOKOLLDATEN LÖSCHEN",
+                atmSetupTitle: "Konfiguration der Bargeldoperation",
+                atmSetupAmount: "Operationsbetrag (€)",
+                atmSetupDenom: "Wählen Sie den Nennwert für den Podajnik",
+                btnAtmConfirm: "Bestätigen und zum ATM-Modul wechseln",
+                ntfNoMoney: "Sie haben nicht so viel Geld in Ihrem Portemonnaie!",
+                ntfNoSeeds: "Keine Samen! Warten Sie auf die automatische Ernte.",
+                ntfNoWater: "Kein Wasser in der Gießkanne! Tank auffüllen.",
+                ntfGoalAchieved: "Sparziel erreicht! Herzlichen Glückwunsch! 🌟",
+                ntfAtmSuccess: "Bargeldoperation im Geldautomaten erfolgreich abgewickelt!",
+                historyEmpty: "Keine aufgezeichneten Transaktionen im Protokoll.",
+                historyDeposit: "ATM-Einzahlung",
+                historyWithdraw: "ATM-Auszahlung",
+                historyWater: "Gartenbeet gegossen",
+                historyHarvest: "Ersparnisse von Pflanze geerntet"
+            }
+        };
+
+        // NOMINAŁY EURO (Banknoty i Monety z informacjami o typie i kolorach/klasach)
+        const EURO_DENOMINATIONS = [
+            { value: 500, type: 'bill', class: 'bill-500' },
+            { value: 200, type: 'bill', class: 'bill-200' },
+            { value: 100, type: 'bill', class: 'bill-100' },
+            { value: 50, type: 'bill', class: 'bill-50' },
+            { value: 20, type: 'bill', class: 'bill-20' },
+            { value: 10, type: 'bill', class: 'bill-10' },
+            { value: 5, type: 'bill', class: 'bill-10' }, // Używa stylu czerwonego prostokąta dla uproszczenia
+            { value: 2, type: 'coin', class: 'coin-silver-gold' },
+            { value: 1, type: 'coin', class: 'coin-gold-silver' },
+            { value: 0.50, type: 'coin', class: 'coin-bronze' },
+            { value: 0.20, type: 'coin', class: 'coin-bronze' },
+            { value: 0.10, type: 'coin', class: 'coin-bronze' },
+            { value: 0.05, type: 'coin', class: 'coin-bronze' },
+            { value: 0.02, type: 'coin', class: 'coin-bronze' },
+            { value: 0.01, type: 'coin', class: 'coin-bronze' }
+        ];
+
+        // STAN APLIKACJI
+        let data = {
+            lang: "pl",
+            wallet: 150.00,
+            savings: 0.00,
+            water: 100,
+            history: [],
+            goals: [
+                { id: 1, name: "Wymarzone Wakacje w Rzymie", target: 500.00, current: 0.00 }
+            ],
+            garden: [
+                { id: 0, planted: true, type: "carrot", emoji: "🥕", progress: 40 },
+                { id: 1, planted: true, type: "tomato", emoji: "🍅", progress: 80 },
+                { id: 2, planted: false, type: "", emoji: "", progress: 0 },
+                { id: 3, planted: false, type: "", emoji: "", progress: 0 },
+                { id: 4, planted: false, type: "", emoji: "", progress: 0 },
+                { id: 5, planted: false, type: "", emoji: "", progress: 0 }
+            ]
+        };
+
+        // STAN SILNIKA ATM
+        let atmState = {
+            active: false,
+            mode: 'withdraw', // lub 'deposit'
+            totalAmount: 0.00,
+            remainingAmount: 0.00,
+            currentDenomination: null
+        };
+
+        // PRZECIĄGANIE (DRAG & DROP) W BANKOMACIE
+        const draggableMoney = document.getElementById('atmDraggableMoney');
+        const atmDropZone = document.getElementById('atmDropZone');
+        let isDragging = false;
+        let startY = 0;
+        let currentTransformY = 0;
+        const successThreshold = 75;
+
+        // INICJALIZACJA STARTOWA
+        window.addEventListener('DOMContentLoaded', () => {
+            loadStateFromStorage();
+            if (!localStorage.getItem('b_garden_lang_chosen')) {
+                document.getElementById('firstTimeLangModal').classList.remove('hidden');
+            } else {
+                document.getElementById('firstTimeLangModal').classList.add('hidden');
+                updateInterfaceTexts();
+                renderUI();
+            }
+            initAtmDragAndDropEvents();
+        });
+
+        function setAppLanguage(lang) {
+            data.lang = lang;
+            localStorage.setItem('b_garden_lang_chosen', 'true');
+            document.getElementById('firstTimeLangModal').classList.add('hidden');
+            saveStateToStorage();
+            updateInterfaceTexts();
+            renderUI();
+        }
+
+        // TŁUMACZENIE KAŻDEGO ELEMENTU INTERFEJSU (ZGODNIE Z ŻYCZENIEM)
+        function updateInterfaceTexts() {
+            const t = translations[data.lang];
+            
+            document.getElementById('lblBrand').innerText = t.brand;
+            document.getElementById('lblAvailableFunds').innerText = t.availableFunds;
+            document.getElementById('lblTotalSavings').innerText = t.totalSavings;
+            document.getElementById('lblActiveGoals').innerText = t.activeGoals;
+            document.getElementById('lblFastOp').innerText = t.fastOp;
+            document.getElementById('lblWaterTitle').innerText = t.waterTitle;
+            document.getElementById('lblWaterStatus').innerText = data.water === 100 ? t.waterStatus : `Poziom wody: ${data.water}%`;
+            document.getElementById('btnRefillWater').innerText = t.btnRefill;
+            document.getElementById('lblGardenTitle').innerText = t.gardenTitle;
+            document.getElementById('lblGoalsTitle').innerText = t.goalsTitle;
+            document.getElementById('lblTestNtf').innerText = t.testNtf;
+            
+            // Tłumaczenia modali i formularzy
+            document.getElementById('lblModalGoalTitle').innerText = t.modalGoalTitle;
+            document.getElementById('lblModalGoalName').innerText = t.modalGoalName;
+            document.getElementById('lblModalGoalAmount').innerText = t.modalGoalAmount;
+            document.getElementById('btnGoalCreate').innerText = t.btnGoalCreate;
+            document.getElementById('lblModalHistTitle').innerText = t.modalHistTitle;
+            document.getElementById('btnHistClear').innerText = t.btnHistClear;
+            document.getElementById('lblAtmSetupTitle').innerText = t.atmSetupTitle;
+            document.getElementById('lblAtmSetupAmount').innerText = t.atmSetupAmount;
+            document.getElementById('lblAtmSetupDenom').innerText = t.atmSetupDenom;
+            document.getElementById('btnAtmSetupConfirm').innerText = t.btnAtmConfirm;
+            document.getElementById('btnAtmAbort').innerText = t.btnAtmCancel;
+
+            updateAtmScreenText();
+        }
+
+        function updateAtmScreenText() {
+            const t = translations[data.lang];
+            const scrStatus = document.getElementById('atmScreenStatus');
+            const scrAmount = document.getElementById('atmScreenAmount');
+            const scrInstruction = document.getElementById('atmScreenInstruction');
+            const dropText = document.getElementById('atmDropZoneText');
+            const dropIcon = document.getElementById('atmDropZoneIcon');
+
+            if (!atmState.active) {
+                scrStatus.innerText = t.atmStatusWait;
+                scrStatus.style.color = '#38bdf8';
+                scrAmount.innerText = `${t.atmAmountToSettle}0.00 €`;
+                scrInstruction.innerText = t.atmInstrWait;
+                dropText.innerText = t.atmDropTextPull;
+                dropIcon.innerText = "📥";
+            } else {
+                scrStatus.innerText = t.atmStatusActive;
+                scrStatus.style.color = '#f59e0b';
+                scrAmount.innerText = `${t.atmAmountRemaining}${atmState.remainingAmount.toFixed(2)} €`;
+                
+                if (atmState.mode === 'withdraw') {
+                    scrInstruction.innerText = t.atmInstrPull;
+                    dropText.innerText = t.atmDropTextPull;
+                    dropIcon.innerText = "📥";
+                } else {
+                    scrInstruction.innerText = t.atmInstrPush;
+                    dropText.innerText = t.atmDropTextPush;
+                    dropIcon.innerText = "📤";
+                }
+            }
+        }
+
+        // ZAKŁADKI
+        function switchTab(tab) {
+            if (tab === 'garden') {
+                document.getElementById('tabGarden').classList.add('active');
+                document.getElementById('tabAtm').classList.remove('active');
+                document.getElementById('viewGarden').classList.remove('hidden');
+                document.getElementById('viewAtm').classList.add('hidden');
+            } else {
+                document.getElementById('tabGarden').classList.remove('active');
+                document.getElementById('tabAtm').classList.add('active');
+                document.getElementById('viewGarden').classList.add('hidden');
+                document.getElementById('viewAtm').classList.remove('hidden');
+            }
+        }
+
+        // RENDER INTERFEJSU
+        function renderUI() {
+            document.getElementById('walletText').innerText = data.wallet.toFixed(2);
+            document.getElementById('savingsText').innerText = data.savings.toFixed(2);
+            document.getElementById('activeGoalsCountText').innerText = data.goals.length;
+            document.getElementById('waterBar').style.width = `${data.water}%`;
+            
+            // Grządki
+            const grid = document.getElementById('gardenGrid');
+            grid.innerHTML = '';
+            data.garden.forEach(slot => {
+                const box = document.createElement('div');
+                box.className = "aspect-square rounded-2xl flex flex-col justify-center items-center relative transition-all border cursor-pointer select-none";
+                
+                if (slot.planted) {
+                    box.className += " bg-amber-100 border-amber-300 shadow-sm";
+                    box.innerHTML = `
+                        <span class="text-3xl mb-1">${slot.emoji}</span>
+                        <div class="w-4/5 bg-slate-200 h-1.5 rounded-full overflow-hidden">
+                            <div class="bg-emerald-500 h-full transition-all" style="width: ${slot.progress}%"></div>
+                        </div>
+                        ${slot.progress >= 100 ? '<span class="absolute -top-1 -right-1 bg-amber-500 text-white rounded-full p-0.5 text-[10px] animate-bounce">⭐</span>' : ''}
+                    `;
+                    box.onclick = () => {
+                        if (slot.progress >= 100) harvestPlant(slot.id);
+                        else waterPlant(slot.id);
+                    };
+                } else {
+                    box.className += " bg-stone-200/50 border-dashed border-stone-300 hover:bg-stone-200";
+                    box.innerHTML = `<span class="text-slate-400 font-bold text-2xl">+</span><span class="text-[9px] uppercase font-bold text-slate-400">Puste</span>`;
+                    box.onclick = () => seedPlant(slot.id);
+                }
+                grid.appendChild(box);
+            });
+
+            // Cele oszczędnościowe
+            const goalsBox = document.getElementById('goalsContainer');
+            goalsBox.innerHTML = '';
+            if (data.goals.length === 0) {
+                goalsBox.innerHTML = `<p class="text-xs text-slate-400 text-center py-2">${translations[data.lang].historyEmpty}</p>`;
+            } else {
+                data.goals.forEach(g => {
+                    const pct = Math.min((g.current / g.target) * 100, 100);
+                    const item = document.createElement('div');
+                    item.className = "p-3 bg-slate-50 border border-slate-100 rounded-xl";
+                    item.innerHTML = `
+                        <div class="flex justify-between text-xs font-bold text-slate-700 mb-1">
+                            <span>${g.name}</span>
+                            <span class="font-mono text-sky-600">${g.current.toFixed(2)} / ${g.target.toFixed(2)} €</span>
+                        </div>
+                        <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden flex">
+                            <div class="bg-sky-500 h-full" style="width: ${pct}%"></div>
+                        </div>
+                    `;
+                    goalsBox.appendChild(item);
+                });
+            }
+        }
+
+        // LOGIKA REKREACYJNA OGRODU
+        function refillWater() {
+            data.water = 100;
+            document.getElementById('lblWaterStatus').innerText = translations[data.lang].waterStatus;
+            triggerInAppNotification("Konewka napełniona!", "success");
+            saveStateToStorage();
+            renderUI();
+        }
+
+        function seedPlant(id) {
+            const types = [
+                { type: 'carrot', emoji: '🥕' },
+                { type: 'tomato', emoji: '🍅' },
+                { type: 'onion', emoji: '🧅' }
+            ];
+            const choice = types[Math.floor(Math.random() * types.length)];
+            data.garden[id] = { id: id, planted: true, type: choice.type, emoji: choice.emoji, progress: 10 };
+            triggerInAppNotification("Zasiano nowe warzywo!", "success");
+            saveStateToStorage();
+            renderUI();
+        }
+
+        function waterPlant(id) {
+            const t = translations[data.lang];
+            if (data.water <= 0) {
+                triggerInAppNotification(t.ntfNoWater, "error");
+                return;
+            }
+            data.water = Math.max(data.water - 15, 0);
+            data.garden[id].progress = Math.min(data.garden[id].progress + 30, 100);
+            
+            addHistoryEntry(t.historyWater, -0.15, 'water');
+            triggerInAppNotification("Podlano roślinkę! Rośnie szybciej.", "success");
+            saveStateToStorage();
+            renderUI();
+            updateInterfaceTexts();
+        }
+
+        function harvestPlant(id) {
+            const t = translations[data.lang];
+            const reward = parseFloat((Math.random() * 2 + 0.5).toFixed(2));
+            
+            // Podział nagrody: część na wolne środki, część na cele oszczędnościowe
+            const toWallet = parseFloat((reward * 0.6).toFixed(2));
+            const toSavings = parseFloat((reward - toWallet).toFixed(2));
+
+            data.wallet += toWallet;
+            data.savings += toSavings;
+
+            // Dofinansowanie aktywnego celu
+            if (data.goals.length > 0) {
+                data.goals[0].current += toSavings;
+                if (data.goals[0].current >= data.goals[0].target) {
+                    triggerInAppNotification(t.ntfGoalAchieved, "success");
+                    data.goals.shift(); // Usuń ukończony cel
+                }
+            }
+
+            data.garden[id] = { id: id, planted: false, type: "", emoji: "", progress: 0 };
+            addHistoryEntry(t.historyHarvest, reward, 'harvest');
+            triggerInAppNotification(`Zebrano warzywo! Zarobiono +${reward.toFixed(2)} €`, "success");
+            saveStateToStorage();
+            renderUI();
+        }
+
+        // MODAL CELÓW
+        function openNewGoalModal() { document.getElementById('newGoalModal').classList.remove('hidden'); }
+        function closeNewGoalModal() { document.getElementById('newGoalModal').classList.add('hidden'); }
+        
+        function createNewGoalSubmit() {
+            const name = document.getElementById('goalNameInput').value.trim();
+            const amt = parseFloat(document.getElementById('goalAmountInput').value);
+            if (!name || isNaN(amt) || amt <= 0) return;
+
+            data.goals.push({ id: Date.now(), name: name, target: amt, current: 0.00 });
+            document.getElementById('goalNameInput').value = '';
+            document.getElementById('goalAmountInput').value = '';
+            closeNewGoalModal();
+            saveStateToStorage();
+            renderUI();
+        }
+
+        // PROGRAMOWANIE I URUCHOMIENIE ATM
+        function triggerSetupAtm(mode) {
+            atmState.mode = mode;
+            const select = document.getElementById('atmSetupDenomSelect');
+            select.innerHTML = '';
+            
+            EURO_DENOMINATIONS.forEach(d => {
+                const opt = document.createElement('option');
+                opt.value = d.value;
+                opt.innerText = `${d.value} € (${d.type === 'bill' ? 'Banknot' : 'Moneta'})`;
+                select.appendChild(opt);
+            });
+
+            if (mode === 'deposit') {
+                document.getElementById('atmSetupAmountBlock').classList.remove('hidden');
+            } else {
+                document.getElementById('atmSetupAmountBlock').classList.add('hidden');
+            }
+
+            document.getElementById('atmSetupModal').classList.remove('hidden');
+        }
+
+        function closeAtmSetup() { document.getElementById('atmSetupModal').classList.add('hidden'); }
+
+        function startAtmEngineExecution() {
+            const select = document.getElementById('atmSetupDenomSelect');
+            const chosenVal = parseFloat(select.value);
+            const denomObj = EURO_DENOMINATIONS.find(d => d.value === chosenVal);
+
+            if (atmState.mode === 'deposit') {
+                const inputAmt = parseFloat(document.getElementById('atmSetupAmountInput').value);
+                if (isNaN(inputAmt) || inputAmt <= 0) return;
+                atmState.totalAmount = inputAmt;
+                atmState.remainingAmount = inputAmt;
+            } else {
+                // Wypłata dopasowuje kwotę do jednego wydawanego nominału
+                atmState.totalAmount = chosenVal;
+                atmState.remainingAmount = chosenVal;
+            }
+
+            atmState.currentDenomination = denomObj;
+            atmState.active = true;
+
+            closeAtmSetup();
+            switchTab('atm');
+            updateAtmScreenText();
+            spawnPhysicalMoneyInDispenser();
+        }
+
+        // GENEROWANIE POPRAWNEGO WIZUALNIE PIENIĄDZA W PODAJNIKU
+        function spawnPhysicalMoneyInDispenser() {
+            draggableMoney.innerHTML = '';
+            draggableMoney.style.transform = 'translateY(0px)';
+            draggableMoney.style.opacity = '1';
+            
+            const d = atmState.currentDenomination;
+            if (!d) return;
+
+            const el = document.createElement('div');
+            if (d.type === 'bill') {
+                el.className = `real-bill ${d.class}`;
+                el.innerHTML = `
+                    <div class="flex justify-between text-[11px] font-sans"><span>${d.value}</span><span>★ EURO ★</span></div>
+                    <div class="text-center text-lg font-mono tracking-wider opacity-90">${d.value} €</div>
+                    <div class="flex justify-between text-[11px] font-sans"><span>🇪🇺</span><span>${d.value}</span></div>
+                `;
+            } else {
+                el.className = `real-coin ${d.class}`;
+                el.innerHTML = `<span class="text-lg">${d.value}</span><span class="text-[10px]">€</span>`;
+            }
+
+            draggableMoney.appendChild(el);
+        }
+
+        // OBSŁUGA GESTU PRZECIĄGANIA (DRAG & DROP) DLA BANKOMATU
+        function initAtmDragAndDropEvents() {
+            draggableMoney.addEventListener('mousedown', dragStart);
+            draggableMoney.addEventListener('touchstart', dragStart, { passive: true });
+
+            window.addEventListener('mousemove', dragMove);
+            window.addEventListener('touchmove', dragMove, { passive: false });
+
+            window.addEventListener('mouseup', dragEnd);
+            window.addEventListener('touchend', dragEnd);
+        }
+
+        function dragStart(e) {
+            if (!atmState.active) return;
+            isDragging = true;
+            startY = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY;
+            draggableMoney.style.transition = 'none';
+        }
+
+        function dragMove(e) {
+            if (!isDragging || !atmState.active) return;
+
+            const clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
+            const deltaY = clientY - startY;
+
+            // Ruch do dołu (Wypłata) lub do góry (Wpłata)
+            if (atmState.mode === 'withdraw' && deltaY > 0) {
+                currentTransformY = deltaY;
+                draggableMoney.style.transform = `translateY(${currentTransformY}px)`;
+                if (currentTransformY >= successThreshold) atmDropZone.classList.add('drag-over');
+                else atmDropZone.classList.remove('drag-over');
+            } else if (atmState.mode === 'deposit' && deltaY < 0) {
+                currentTransformY = deltaY;
+                draggableMoney.style.transform = `translateY(${currentTransformY}px)`;
+                // Przy wpłacie przeciągamy z powrotem do szczeliny
+                if (Math.abs(currentTransformY) >= successThreshold) atmDropZone.classList.add('drag-over');
+                else atmDropZone.classList.remove('drag-over');
+            }
+
+            if (e.cancelable) e.preventDefault();
+        }
+
+        function dragEnd() {
+            if (!isDragging) return;
+            isDragging = false;
+            atmDropZone.classList.remove('drag-over');
+
+            const totalDragged = Math.abs(currentTransformY);
+
+            if (totalDragged >= successThreshold) {
+                // Sukces operacji gotówkowej
+                executeAtmSuccessStep();
+            } else {
+                // Anulowanie ruchu - powrót do pozycji wyjściowej szczeliny
+                draggableMoney.style.transition = 'transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+                draggableMoney.style.transform = 'translateY(0px)';
+            }
+            currentTransformY = 0;
+        }
+
+        function executeAtmSuccessStep() {
+            const t = translations[data.lang];
+            const valueProcessed = atmState.currentDenomination.value;
+
+            if (atmState.mode === 'withdraw') {
+                data.wallet += valueProcessed;
+                atmState.remainingAmount = Math.max(atmState.remainingAmount - valueProcessed, 0);
+                addHistoryEntry(t.historyWithdraw, valueProcessed, 'atm_out');
+            } else {
+                if (data.wallet < valueProcessed) {
+                    triggerInAppNotification(t.ntfNoMoney, "error");
+                    draggableMoney.style.transform = 'translateY(0px)';
+                    return;
+                }
+                data.wallet -= valueProcessed;
+                atmState.remainingAmount = Math.max(atmState.remainingAmount - valueProcessed, 0);
+                addHistoryEntry(t.historyDeposit, -valueProcessed, 'atm_in');
+            }
+
+            // Animacja zniknięcia elementu
+            draggableMoney.style.transition = 'all 0.3s ease-in';
+            draggableMoney.style.transform += ' scale(0)';
+            draggableMoney.style.opacity = '0';
+
+            saveStateToStorage();
+            renderUI();
+
+            if (atmState.remainingAmount <= 0) {
+                // Koniec całej operacji
+                atmState.active = false;
+                updateAtmScreenText();
+                document.getElementById('atmScreenStatus').innerText = t.atmStatusSuccess;
+                document.getElementById('atmScreenStatus').style.color = '#10b981';
+                
+                triggerInAppNotification(t.ntfAtmSuccess, "success");
+                
+                // Wywołanie konfetti dla pełnej satysfakcji
+                if (typeof confetti === 'function') {
+                    confetti({ particleCount: 140, spread: 80, origin: { y: 0.6 } });
+                }
+            } else {
+                // Kolejna partia gotówki do rozliczenia
+                setTimeout(() => {
+                    updateAtmScreenText();
+                    spawnPhysicalMoneyInDispenser();
+                }, 600);
+            }
+        }
+
+        // REJESTR I HISTORIA TRANSAKCJI
+        function openHistory() {
+            document.getElementById('historyModal').classList.remove('hidden');
+            const wrap = document.getElementById('historyItemsWrapper');
+            wrap.innerHTML = '';
+
+            if (data.history.length === 0) {
+                wrap.innerHTML = `<p class="text-xs text-slate-400 text-center py-8">${translations[data.lang].historyEmpty}</p>`;
+                return;
+            }
+
+            data.history.forEach(item => {
+                const row = document.createElement('div');
+                row.className = "p-3 bg-slate-50 border border-slate-100 rounded-xl flex justify-between items-center text-xs";
+                
+                const isPositive = item.amount > 0;
+                row.innerHTML = `
+                    <div>
+                        <p class="font-bold text-slate-800">${item.title}</p>
+                        <p class="text-[10px] text-slate-400">${item.date}</p>
+                    </div>
+                    <span class="font-mono font-bold ${isPositive ? 'text-emerald-600' : 'text-rose-600'}">
+                        ${isPositive ? '+' : ''}${item.amount.toFixed(2)} €
+                    </span>
+                `;
+                wrap.appendChild(row);
+            });
+        }
+
+        function closeHistory() { document.getElementById('historyModal').classList.remove('hidden').classList.add('hidden'); }
+
+        function addHistoryEntry(title, amount, type) {
+            const now = new Date();
+            const dateStr = now.toLocaleDateString() + " " + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            data.history.unshift({
+                id: Math.random(),
+                title: title,
+                amount: amount,
+                type: type,
+                date: dateStr
+            });
+        }
+
+        function clearAllHistoryData() {
+            data.history = [];
+            openHistory();
+            saveStateToStorage();
+        }
+
+        // SYSTEM EMISJI TOASTÓW POWIADOMIEŃ W APLIKACJI
+        function triggerInAppNotification(msg, type = 'success') {
+            const container = document.getElementById('notificationContainer');
+            const toast = document.createElement('div');
+            toast.className = "in-app-toast";
+            
+            const badgeColor = type === 'success' ? 'bg-emerald-500' : 'bg-rose-500';
+            const icon = type === 'success' ? '✓' : '✕';
+            
+            toast.innerHTML = `
+                <span class="w-5 h-5 rounded-full ${badgeColor} text-white flex justify-center items-center font-bold text-xs">${icon}</span>
+                <span class="flex-1">${msg}</span>
+            `;
+            
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.add('show'), 50);
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 400);
+            }, 3000);
+        }
+
+        // SKŁADOWANIE I TRWAŁOŚĆ DANYCH (LOCALSTORAGE)
+        function saveStateToStorage() {
+            localStorage.setItem('b_garden_pro_savefile', JSON.stringify(data));
+        }
+
+        function loadStateFromStorage() {
+            const file = localStorage.getItem('b_garden_pro_savefile');
+            if (file) {
+                try {
+                    const parsed = JSON.parse(file);
+                    if (parsed && parsed.wallet !== undefined) data = parsed;
+                } catch (e) {
+                    console.error("Błąd ładowania pliku zapisu danych", e);
+                }
+            }
+        }
+
+        function resetAppState() {
+            localStorage.removeItem('b_garden_pro_savefile');
+            localStorage.removeItem('b_garden_lang_chosen');
+            window.location.reload();
+        }
+    </script>
+</body>
+</html>
