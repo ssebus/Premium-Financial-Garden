@@ -1,0 +1,2441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+<title>Bubble Financial Garden PRO - Premium Finance Tracker & Virtual ATM Simulation</title>
+<meta name="description" content="Track your savings goals, manage available funds, water your virtual financial garden, and experience a realistic interactive ATM simulation. Available in English, Polski, and Deutsch.">
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Bubble Garden">
+
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🫧</text></svg>">
+
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+<style>
+html,body{
+height:100%;
+margin:0;
+overflow:hidden;
+font-family:sans-serif;
+touch-action:none;
+}
+
+body{
+background:linear-gradient(135deg,#e0f2fe 0%,#f8fafc 50%,#f0fdf4 100%);
+background-size:200% 200%;
+animation:bgMove 12s ease infinite;
+display:flex;
+justify-content:center;
+align-items:center;
+padding:10px;
+position: relative;
+user-select: none;
+-webkit-user-select: none;
+}
+
+@keyframes bgMove{
+0%{background-position:0% 50%;}
+50%{background-position:100% 50%;}
+100%{background-position:0% 50%;}
+}
+
+.app{
+width:100%;
+max-width:430px;
+height:96vh;
+height:calc(var(--vh, 1vh) * 96);
+background:rgba(255,255,255,.88);
+backdrop-filter:blur(20px);
+-webkit-backdrop-filter:blur(20px);
+border-radius:38px;
+overflow:hidden;
+display:flex;
+flex-direction:column;
+box-shadow:0 25px 60px rgba(0,0,0,.12);
+border:1px solid rgba(255,255,255,.7);
+position:relative;
+}
+
+.scroll{
+flex:1;
+overflow-y:auto;
+padding:16px;
+-webkit-overflow-scrolling:touch;
+}
+
+.topbar{
+background:linear-gradient(90deg,#22d3ee,#10b981);
+padding:16px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+color:white;
+z-index: 10;
+}
+
+.title{
+font-weight:900;
+font-size:14px;
+}
+
+.notification-container {
+position: absolute;
+top: 75px;
+left: 16px;
+right: 16px;
+z-index: 9999;
+display: flex;
+flex-direction: column;
+gap: 10px;
+pointer-events: none;
+}
+
+.in-app-toast {
+background: white;
+border-radius: 20px;
+padding: 14px 18px;
+box-shadow: 0 15px 35px rgba(15,23,42,0.15);
+border: 1px solid #e2e8f0;
+display: flex;
+gap: 12px;
+align-items: center;
+transform: translateY(-40px);
+opacity: 0;
+transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+pointer-events: auto;
+cursor: pointer;
+}
+
+.in-app-toast.show {
+transform: translateY(0);
+opacity: 1;
+}
+
+.balanceCard{
+background:white;
+border-radius:28px;
+padding:20px;
+border:2px solid #cffafe;
+box-shadow:0 0 25px rgba(34,211,238,.18);
+}
+
+.goalCard{
+background:white;
+border-radius:28px;
+padding:16px;
+position:relative;
+overflow:hidden;
+border:1px solid #e2e8f0;
+min-height: 180px;
+height: auto;
+display: flex;
+flex-direction: column;
+justify-content: space-between;
+box-shadow: 0 8px 20px rgba(0,0,0,0.04);
+gap: 12px;
+}
+
+.goal-header {
+position: relative;
+z-index: 10;
+display: flex;
+justify-content: space-between;
+align-items: flex-start;
+width: 100%;
+}
+
+.goal-title {
+font-weight: 800;
+font-size: 14px;
+color: #0f172a;
+word-break: break-word;
+white-space: normal;
+line-height: 1.2;
+flex: 1;
+padding-right: 6px;
+}
+
+#goalsWrap {
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap: 14px;
+margin-top: 14px;
+align-items: start;
+}
+
+.goal-circle-container {
+position: relative;
+width: 90px;
+height: 90px;
+margin: 4px auto;
+border-radius: 50%;
+background: radial-gradient(circle, #a5f3fc 0%, #38bdf8 60%, #0284c7 100%);
+box-shadow: 0 0 15px rgba(56, 189, 248, 0.5), inset 0 0 10px rgba(255,255,255,0.8);
+overflow: hidden;
+border: 3px solid #ffffff;
+animation: spinGlow 6s linear infinite;
+display: flex;
+align-items: center;
+justify-content: center;
+flex-shrink: 0;
+}
+
+@keyframes spinGlow {
+0% { filter: hue-rotate(0deg); }
+100% { filter: hue-rotate(360deg); }
+}
+
+.goal-orb {
+position: absolute;
+border-radius: 50%;
+background: rgba(255, 255, 255, 0.85);
+box-shadow: 0 0 8px rgba(255, 255, 255, 0.9);
+animation: floatOrb 3s ease-in-out infinite alternate;
+}
+
+.orb1 { width: 14px; height: 14px; top: 15%; left: 20%; animation-delay: 0s; }
+.orb2 { width: 18px; height: 18px; top: 50%; left: 65%; animation-delay: 0.7s; }
+.orb3 { width: 10px; height: 10px; top: 70%; left: 25%; animation-delay: 1.4s; }
+.orb4 { width: 12px; height: 12px; top: 25%; left: 70%; animation-delay: 2.1s; }
+
+@keyframes floatOrb {
+0% { transform: translateY(0px) scale(0.8); opacity: 0.6; }
+100% { transform: translateY(-12px) scale(1.2); opacity: 1; }
+}
+
+.goal-percent-text {
+position: relative;
+z-index: 5;
+font-weight: 900;
+font-size: 15px;
+color: #0f172a;
+text-shadow: 0 1px 3px rgba(255,255,255,0.9);
+}
+
+.slot{
+background:white;
+border-radius:24px;
+padding:14px;
+height:190px;
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+border:1px solid #e2e8f0;
+transition:.2s;
+}
+
+.slot:active{transform:scale(.97);}
+
+.modal{
+position:absolute;
+inset:0;
+background:rgba(0,0,0,.4);
+backdrop-filter:blur(5px);
+-webkit-backdrop-filter:blur(5px);
+display:none;
+justify-content:center;
+align-items:center;
+padding:20px;
+z-index:100;
+}
+
+.modalBox{
+background:white;
+width:100%;
+border-radius:28px;
+padding:20px;
+max-height:90vh;
+overflow-y:auto;
+}
+
+input,select{
+width:100%;
+padding:14px;
+border-radius:16px;
+border:1px solid #cbd5e1;
+background:#f8fafc;
+font-weight:700;
+outline:none;
+-webkit-appearance: none;
+}
+
+.underlined-input {
+border: none !important;
+border-bottom: 2px solid #cbd5e1 !important;
+background: transparent !important;
+border-radius: 0px !important;
+padding: 8px 4px !important;
+font-weight: 700;
+}
+.underlined-input:focus {
+border-bottom-color: #06b6d4 !important;
+}
+
+.mainBtn{
+padding:14px;
+border-radius:18px;
+font-weight:900;
+border:none;
+cursor:pointer;
+-webkit-tap-highlight-color: transparent;
+}
+
+.histItem{
+background:white;
+border-radius:18px;
+padding:12px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+border:1px solid #e2e8f0;
+}
+
+.tab-btn {
+flex: 1;
+padding: 10px;
+font-weight: 800;
+font-size: 10px;
+border-radius: 12px;
+background: #f1f5f9;
+color: #64748b;
+border: none;
+cursor: pointer;
+text-transform: uppercase;
+display: flex;
+align-items: center;
+justify-content: center;
+gap: 4px;
+}
+
+.tab-btn.active {
+background: #06b6d4;
+color: white;
+}
+
+.atm-machine {
+background: linear-gradient(180deg, #0f172a, #1e293b, #334155);
+border-radius: 28px;
+padding: 24px;
+color: white;
+text-align: center;
+position: relative;
+border: 5px solid #475569;
+box-shadow: inset 0 0 30px rgba(0,0,0,0.8), 0 15px 30px rgba(0,0,0,0.3);
+}
+
+.atm-screen {
+background: #020617;
+border: 2px solid #334155;
+border-radius: 12px;
+padding: 10px;
+font-family: monospace;
+color: #38bdf8;
+font-size: 11px;
+margin-bottom: 15px;
+box-shadow: inset 0 0 10px rgba(56,189,248,0.2);
+}
+
+.atm-slot {
+background: #020617;
+height: 36px;
+border-radius: 6px;
+margin: 20px auto;
+width: 85%;
+border: 2px solid #06b6d4;
+box-shadow: 0 0 15px rgba(6,182,212,0.6);
+position: relative;
+transition: all 0.2s;
+display: flex;
+justify-content: center;
+align-items: center;
+}
+
+.atm-slot.pulse {
+animation: slotGlow 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes slotGlow {
+0% { border-color: #06b6d4; box-shadow: 0 0 5px rgba(6,182,212,0.4); }
+100% { border-color: #10b981; box-shadow: 0 0 25px rgba(16,185,129,0.9); }
+}
+
+.money-dispenser {
+height: 180px;
+position: relative;
+background: rgba(0,0,0,0.2);
+border-radius: 20px;
+border: 2px dashed rgba(255,255,255,0.1);
+display: flex;
+justify-content: center;
+align-items: center;
+overflow: visible;
+margin-top: 10px;
+}
+
+.draggable-money {
+cursor: grab;
+position: absolute;
+z-index: 50;
+user-select: none;
+-webkit-user-select: none;
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+touch-action: none;
+will-change: transform;
+}
+.draggable-money:active { cursor: grabbing; }
+
+.real-bill {
+width: 150px;
+height: 75px;
+border-radius: 6px;
+position: relative;
+display: flex;
+flex-direction: column;
+justify-content: center;
+align-items: center;
+border: 3px double rgba(255,255,255,0.6);
+box-shadow: 0 6px 12px rgba(0,0,0,0.4), inset 0 0 10px rgba(0,0,0,0.15);
+color: white;
+font-family: 'Georgia', serif;
+font-weight: bold;
+text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+}
+
+.real-bill::before {
+content: "";
+position: absolute;
+inset: 4px;
+border: 1px solid rgba(255,255,255,0.3);
+border-radius: 3px;
+pointer-events: none;
+}
+
+.bill-center-value {
+font-size: 22px;
+letter-spacing: 1px;
+z-index: 2;
+}
+
+.bill-bottom-text {
+font-size: 9px;
+font-family: sans-serif;
+opacity: 0.9;
+margin-top: 1px;
+background: rgba(0,0,0,0.2);
+padding: 1px 6px;
+border-radius: 6px;
+text-transform: uppercase;
+letter-spacing: 0.5px;
+z-index: 2;
+}
+
+.real-coin {
+width: 70px;
+height: 70px;
+border-radius: 999px;
+background: linear-gradient(135deg, #fcd34d, #f59e0b, #d97706);
+border: 3px solid #b45309;
+box-shadow: 0 5px 10px rgba(0,0,0,0.4), inset -3px -3px 6px rgba(0,0,0,0.4), inset 3px 3px 6px rgba(255,255,255,0.4);
+display: flex;
+flex-direction: column;
+justify-content: center;
+align-items: center;
+color: #78350f;
+font-weight: 900;
+position: relative;
+}
+
+.real-coin.silver {
+background: linear-gradient(135deg, #e2e8f0, #cbd5e1, #94a3b8);
+border: 3px solid #64748b;
+color: #334155;
+}
+
+.coin-value {
+font-size: 18px;
+line-height: 1;
+}
+
+.coin-unit {
+font-size: 9px;
+text-transform: uppercase;
+font-weight: 800;
+}
+
+@keyframes printMoney {
+0% { transform: translateY(40px) scale(0.2); opacity: 0; }
+100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+@keyframes autoFlyToSlot {
+0% { transform: translate(0, 0) scale(1); opacity: 1; }
+100% { transform: translate(0, -110px) scale(0.1); opacity: 0; }
+}
+
+@keyframes autoFlyFromSlot {
+0% { transform: translate(0, 0) scale(1); opacity: 1; }
+100% { transform: translate(0, 110px) scale(1); opacity: 0; }
+}
+
+.printed-money {
+animation: printMoney 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.auto-flying {
+animation: autoFlyToSlot 0.3s ease-in forwards !important;
+}
+
+.auto-flying-from {
+animation: autoFlyFromSlot 0.3s ease-in forwards !important;
+}
+
+.atm-premium-card {
+width: 170px;
+height: 105px;
+background: linear-gradient(135deg, #1e293b, #0f172a, #475569);
+border: 2px solid #d4af37;
+border-radius: 12px;
+box-shadow: 0 8px 20px rgba(0,0,0,0.5), inset 0 0 15px rgba(212,175,55,0.2);
+display: flex;
+flex-direction: column;
+justify-content: space-between;
+padding: 10px 12px;
+color: #f7e7ce;
+font-family: monospace;
+position: relative;
+cursor: grab;
+touch-action: none;
+margin: 10px auto;
+z-index: 99;
+}
+.atm-premium-card:active { cursor: grabbing; }
+
+.card-chip {
+width: 26px;
+height: 20px;
+background: linear-gradient(135deg, #fcd34d, #fbbf24, #d97706);
+border-radius: 4px;
+border: 1px solid #b45309;
+}
+.card-logo {
+align-self: flex-end;
+font-weight: 900;
+font-size: 10px;
+letter-spacing: 1px;
+color: #d4af37;
+text-shadow: 0 0 5px rgba(214,175,55,0.5);
+}
+.card-number {
+font-size: 9px;
+letter-spacing: 1px;
+margin-top: 4px;
+text-align: left;
+}
+.card-holder {
+font-size: 8px;
+text-transform: uppercase;
+text-align: left;
+opacity: 0.9;
+}
+.card-meta {
+display: flex;
+justify-content: space-between;
+font-size: 7px;
+opacity: 0.8;
+}
+
+@keyframes nfcPulse {
+0% { transform: scale(1); opacity: 0.3; border-color: #06b6d4; }
+50% { opacity: 0.8; }
+100% { transform: scale(1.1); opacity: 0; border-color: #10b981; }
+}
+.nfc-area {
+border: 2px dashed #06b6d4;
+border-radius: 50%;
+width: 70px;
+height: 70px;
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 24px;
+margin: 10px auto;
+position: relative;
+background: rgba(6,182,212,0.05);
+transition: 0.3s;
+}
+.nfc-area::after {
+content: "";
+position: absolute;
+inset: -6px;
+border: 2px solid #06b6d4;
+border-radius: 50%;
+animation: nfcPulse 1.8s infinite linear;
+pointer-events: none;
+}
+
+@keyframes arrowBounce {
+0%, 100% { transform: translateY(0); opacity: 0.5; }
+50% { transform: translateY(4px); opacity: 1; }
+}
+@keyframes arrowBounceUp {
+0%, 100% { transform: translateY(0); opacity: 0.5; }
+50% { transform: translateY(-4px); opacity: 1; }
+}
+.arrow-down { display: inline-block; animation: arrowBounce 1s infinite; font-size: 14px; color: #06b6d4; font-weight: bold; }
+.arrow-up { display: inline-block; animation: arrowBounceUp 1s infinite; font-size: 14px; color: #10b981; font-weight: bold; }
+</style>
+</head>
+
+<body>
+
+<div class="modal" id="firstTimeLangModal" style="z-index: 999999; display: none;">
+<div class="modalBox" style="text-align: center; max-width: 360px;">
+<div style="font-size: 44px; margin-bottom: 10px;">🌐</div>
+<div style="font-size: 18px; font-weight: 900; color: #0f172a;">Welcome / Willkommen / Witaj</div>
+<div style="font-size: 13px; color: #64748b; margin-top: 8px; margin-bottom: 20px; font-weight: 600; line-height: 1.5;">
+Choose language / Wähle deine Sprache / Wybierz język:
+</div>
+<div style="display: flex; flex-direction: column; gap: 10px;">
+<button onclick="setLanguageFirstTime('pl')" class="mainBtn" style="background: #06b6d4; color: white; width: 100%;">Polski</button>
+<button onclick="setLanguageFirstTime('en')" class="mainBtn" style="background: #0f172a; color: white; width: 100%;">English</button>
+<button onclick="setLanguageFirstTime('de')" class="mainBtn" style="background: #10b981; color: white; width: 100%;">Deutsch</button>
+</div>
+</div>
+</div>
+
+<div class="app">
+
+<div class="notification-container" id="toastContainer"></div>
+
+<div class="topbar">
+<div>
+<div class="title" id="appTitle">🫧 BĄBELKOWY OGRÓD</div>
+<div style="font-size:10px;opacity:.9;" id="appSubtitle">Premium Financial Garden</div>
+</div>
+<div style="display:flex;gap:8px;align-items:center;">
+<button onclick="openLangModal()" style="background:rgba(255,255,255,.2);border:none;padding:10px 12px;border-radius:14px;color:white;font-weight:900;cursor:pointer;">🌐</button>
+<button onclick="openHistory()" style="background:rgba(255,255,255,.2);border:none;padding:10px 12px;border-radius:14px;color:white;font-weight:900;cursor:pointer;">📊</button>
+<button onclick="resetApp()" style="background:rgba(255,255,255,.2);border:none;padding:10px 12px;border-radius:14px;color:white;font-weight:900;cursor:pointer;">♻️</button>
+</div>
+</div>
+
+<div class="scroll">
+
+<div class="balanceCard">
+<div id="freeFundsLabel" style="font-size:10px;font-weight:900;color:#94a3b8;text-transform:uppercase;">Wolne środki</div>
+<div style="font-size:42px;font-weight:900;margin-top:6px;"><span id="balanceText">0</span> €</div>
+<div style="font-size:12px;font-weight:800;color:#0284c7;margin-top:4px;background:#f0f9ff;padding:6px 12px;border-radius:12px;display:inline-block;border:1px solid #bae6fd;">
+<span id="withGoalsLabel">Z celami (wpłacone):</span> <span id="balanceWithGoalsText">0</span> €
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px;">
+<button onclick="openATM('deposit')" class="mainBtn" id="depositBtn" style="background-color: #10b981; color: white;">💵 WPŁAĆ</button>
+<button onclick="openATM('withdraw')" class="mainBtn" id="withdrawBtn" style="background-color: #ef4444; color: white;">💸 WYDAJ</button>
+</div>
+</div>
+
+<div style="background:linear-gradient(90deg,#dbeafe,#cffafe);padding:18px;border-radius:24px;border:1px solid #bfdbfe;display:flex;justify-content:space-between;align-items:center;margin-top:16px;">
+<div>
+<div id="gardenWaterLabel" style="font-size:11px;font-weight:900;color:#0369a1;">💧 Woda ogrodowa</div>
+<div id="waterPlantsLabel" style="font-size:10px;color:#64748b;margin-top:2px;">Podlewaj rośliny</div>
+</div>
+<div style="font-size:32px;font-weight:900;color:#0284c7;"><span id="waterText">0</span></div>
+</div>
+
+<div onclick="openCardConfigModal()" style="background:linear-gradient(135deg,#1e293b,#334155);padding:16px;border-radius:24px;border:2px solid #d4af37;display:flex;justify-content:space-between;align-items:center;margin-top:16px;cursor:pointer;box-shadow:0 8px 20px rgba(0,0,0,0.08); transition:0.2s;" onmouseover="this.style.transform='scale(1.01)'" onmouseout="this.style.transform='scale(1)'">
+<div style="display:flex; align-items:center; gap:12px;">
+<div style="font-size:28px;">💳</div>
+<div>
+<div style="font-size:12px;font-weight:900;color:#f7e7ce;letter-spacing:0.5px;" id="mainCardTitle">KARTA PŁATNICZA VIP</div>
+<div id="mainCardMiniNumber" style="font-size:10px;color:#94a3b8;font-family:monospace;margin-top:2px;">•••• •••• •••• 7777</div>
+</div>
+</div>
+<div style="font-size:11px; font-weight:800; color:#d4af37; text-transform:uppercase; background:rgba(212,175,55,0.15); padding:4px 10px; border-radius:10px;" id="mainCardSettingsBtn">USTAWIENIA ⚙️</div>
+</div>
+
+<div style="margin-top:22px;display:flex;justify-content:space-between;align-items:center;">
+<div id="savingsGoalsLabel" style="font-size:12px;font-weight:900;color:#475569;text-transform:uppercase;">Cele oszczędnościowe</div>
+<button onclick="openGoalModal()" id="newGoalBtn" class="mainBtn" style="background:#06b6d4; color:white; padding:8px 14px; font-size:11px;">+ NOWY</button>
+</div>
+<div id="goalsWrap"></div>
+
+<div id="yourGardenLabel" style="margin-top:28px;font-size:12px;font-weight:900;color:#475569;text-transform:uppercase;">🏡 Twój ogród</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px;" id="gardenWrap"></div>
+
+<div style="margin-top: 24px; border-top: 1px dashed #cbd5e1; padding-top: 20px;">
+<div onclick="toggleNotificationsManually()" id="ntfStatusBadge" style="padding: 12px 16px; border-radius: 18px; font-size: 12px; font-weight: 800; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: 0.2s; border: 1px solid #cbd5e1;">
+<span id="ntfStatusText">Stan powiadomień...</span>
+<span id="ntfStatusPluska" style="font-size: 16px;">⚪</span>
+</div>
+<button onclick="triggerNotificationTest()" id="testNtfBtn" class="mainBtn" style="background: #0284c7; color: white; padding: 10px; font-size: 11px; width:100%; margin-top:8px;">🧪 TESTUJ POWIADOMIENIA</button>
+</div>
+
+</div>
+
+<!-- MODAL INTERAKTYWNEGO BANKOMATU -->
+<div class="modal" id="atmModal">
+<div class="modalBox" style="background: #0f172a; color: white; border: 2px solid #334155;">
+<div style="display:flex;justify-content:space-between;align-items:center; margin-bottom: 10px;">
+<div id="atmTitle" style="font-size:18px;font-weight:900;color:#06b6d4;">🏧 Realistyczny Bankomat</div>
+<button onclick="closeATM()" id="atmTopCloseBtn" style="border:none;background:none;font-size:24px;color:white;cursor:pointer;">✕</button>
+</div>
+
+<!-- STAGE 0: WERYFIKACJA KARTY -->
+<div id="atmCardAuthStage" style="margin-top: 15px; text-align: center;">
+    <div class="atm-machine" style="padding: 16px;">
+        <div class="atm-screen" style="font-size: 12px; padding: 15px;">
+            <div id="atmCardScreenStatus" style="font-weight: bold; color: #fbbf24; text-transform: uppercase; letter-spacing: 0.5px;">WITAMY W BANKOMACIE KLIENTA VIP!</div>
+            <div id="atmCardScreenDesc" style="font-size: 9px; color: #94a3b8; margin-top: 6px;">Aby zweryfikować twoją kartę, wsuń ją do szczeliny lub przytrzymaj nad polem NFC...</div>
+        </div>
+        
+        <div id="atmCardInstructionText" style="font-size:11px; font-weight:800; color:#e2e8f0; margin-bottom:12px;">Wsuń kartę do szczeliny lub przytrzymaj nad polem NFC:</div>
+        
+        <div style="font-size:11px; color:#38bdf8; margin-bottom:2px;"><span id="slotInsertLabel">Wsuń tutaj</span> <span class="arrow-down">⇣</span></div>
+        <div class="atm-slot pulse" id="atmCardSlotTarget" style="border-color: #d4af37; box-shadow: 0 0 15px rgba(212,175,55,0.4); margin: 5px auto 15px auto;"></div>
+        
+        <div style="font-size:11px; color:#10b981; margin-bottom:2px;"><span id="nfcHoldLabel">Przytrzymaj (0.5s)</span> <span class="arrow-down">⇣</span></div>
+        <div class="nfc-area" id="atmNfcField">📶</div>
+        
+        <div style="height: 125px; position: relative; display: flex; justify-content: center; align-items: center;" id="atmCardContainer">
+            <div class="atm-premium-card" id="draggableAtmCard">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div class="card-chip"></div>
+                    <div class="card-logo">BGF PRO</div>
+                </div>
+                <div class="card-number" id="vCardNumber">•••• •••• •••• 8888</div>
+                <div class="card-meta">
+                    <div class="card-holder" id="vCardHolder">JAN KOWALSKI</div>
+                    <div>CVV: <span id="vCardCvv">123</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <button onclick="closeATM()" class="mainBtn" id="atmCardCancelBtn" style="background:#334155; color:white; width: 100%; margin-top: 15px;">Anuluj</button>
+</div>
+
+<!-- STAGE RECOVERY/EJECT: OBLIGATORYJNE WYCIĄGNIĘCIE KARTY PRZED TRANSAKCJĄ -->
+<div id="atmCardEjectStage" style="display:none; margin-top: 15px; text-align: center;">
+    <div class="atm-machine" style="padding: 24px;">
+        <div class="atm-screen" style="font-size: 13px; padding: 20px;">
+            <div style="font-weight: bold; color: #ef4444; text-transform: uppercase; letter-spacing: 0.5px; animation: pulse 1s infinite;" id="ejectCardHeader">⚠️ NAJPIERW ODBIERZ KARTĘ</div>
+            <div style="font-size: 10px; color: #94a3b8; margin-top: 8px;" id="atmEjectScreenDesc">Karta została odczytana. Kliknij ją i wyjmij ze szczeliny, aby przejść dalej!</div>
+        </div>
+        <div style="font-size:12px; color:#38bdf8; margin-top:15px; margin-bottom:5px;"><span id="pullCardLabel">Wyciągnij kartę w dół</span> <span class="arrow-down">⇣</span></div>
+        <div style="height: 130px; position: relative; display: flex; justify-content: center; align-items: center;" id="atmEjectCardContainer"></div>
+    </div>
+</div>
+
+<!-- STAGE PIN: PODANIE KODU PIN KARTY -->
+<div id="atmPinStage" style="display:none; margin-top: 15px; text-align: center;">
+    <div class="atm-machine" style="padding: 20px;">
+        <div class="atm-screen" style="font-size: 12px; padding: 15px;">
+            <div style="font-weight: bold; color: #06b6d4; text-transform: uppercase;" id="enterPinHeader">🔑 PODAJ KOD PIN KARTY</div>
+            <div style="font-size: 9px; color: #94a3b8; margin-top: 6px;" id="enterPinSubheader">Wpisz 4 cyfry, aby autoryzować sesję</div>
+        </div>
+        <div style="margin-top: 15px;">
+            <input type="password" maxlength="4" id="atmPinInput" placeholder="PIN" style="background:#1e293b; color:white; border-color:#475569; text-align:center; font-size:24px; letter-spacing:8px;">
+        </div>
+        <div id="atmPinError" style="color:#ef4444; font-size:11px; font-weight:bold; margin-top:8px; display:none;">Niepoprawny PIN! Spróbuj ponownie.</div>
+    </div>
+    <div style="margin-top:18px; display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+        <button onclick="closeATM()" class="mainBtn" id="pinCancelBtn" style="background:#334155; color:white;">Anuluj</button>
+        <button onclick="verifyAtmPin()" class="mainBtn" id="pinConfirmBtn" style="background:#10b981; color:white;">Zatwierdź PIN</button>
+    </div>
+</div>
+
+<!-- STAGE SETUP: PODANIE KWOTY I POWODU -->
+<div id="atmSetupStage" style="display:none;">
+<div style="margin-top:14px;"><input type="number" step="any" id="atmAmount" oninput="checkUltraFastDepositOption()" style="background:#1e293b; color:white; border-color:#475569;"></div>
+<div style="margin-top:10px;"><input type="text" id="atmReason" style="background:#1e293b; color:white; border-color:#475569;"></div>
+<div style="margin-top:10px; display:none;" id="ultraFastDepositBtnWrap">
+<button onclick="triggerUltraFastDeposit()" class="mainBtn" id="ultraFastBtn" style="background:linear-gradient(90deg, #f59e0b, #ef4444); color:white; width:100%; font-size:12px; padding:12px;">⚡ ULTRA SZYBKA WPŁATA (>2000€)</button>
+</div>
+<div style="margin-top:18px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+<button onclick="closeATM()" class="mainBtn" id="atmCancelBtn" style="background:#334155; color:white;">Anuluj</button>
+<button onclick="startAtmInteraction()" class="mainBtn" id="atmConfirmBtn" style="background:#06b6d4;color:white;">Zatwierdź</button>
+</div>
+</div>
+
+<!-- STAGE INTERACTIVE: OPERACJE GOTÓWKOWE -->
+<div id="atmInteractiveStage" style="display:none; margin-top:15px;">
+<div class="atm-machine">
+    <div class="atm-screen">
+        <div id="atmScreenStatus">STATUS...</div>
+        <div id="atmScreenRemaining" style="color:#34d399; font-weight:bold; margin-top:4px;">Do rozliczenia: 0 €</div>
+    </div>
+    <div id="atmInstructionText" style="font-size:12px; font-weight:800; color:#e2e8f0; margin-bottom:6px;">Wsuń nominał:</div>
+    
+    <div id="atmSlotArrowLabel" style="font-size:11px; color:#06b6d4; margin-bottom:2px;"><span id="slotNameLabel">Szczelina</span> <span class="arrow-down">⇣</span></div>
+    <div class="atm-slot pulse" id="atmSlotTarget"></div>
+    <div class="money-dispenser" id="moneyDispenser"></div>
+</div>
+<div style="text-align:center; margin-top:15px; display:flex; flex-direction:column; gap:10px;">
+<button onclick="triggerAiBotFastExecution()" id="aiBotBtn" class="mainBtn" style="background:linear-gradient(90deg, #a855f7, #06b6d4); color:white; font-size:13px; padding:12px;">⚡ AI-BOT</button>
+<button onclick="resetAtmStage()" id="atmAbortBtn" class="mainBtn" style="background:#334155; color:white; font-size:11px; padding:8px 16px;">⬅️ Przerwij</button>
+</div>
+</div>
+
+</div>
+</div>
+
+<div class="modal" id="goalModal">
+<div class="modalBox">
+<div style="display:flex;justify-content:space-between;align-items:center;">
+<div id="newGoalTitle" style="font-size:18px;font-weight:900;">🎯 Nowy cel</div>
+<button onclick="closeGoalModal()" style="border:none;background:none;font-size:24px;cursor:pointer;">✕</button>
+</div>
+<div style="margin-top:16px;"><input type="text" id="goalName"></div>
+<div style="margin-top:14px;"><input type="number" step="any" id="goalTarget"></div>
+<div style="margin-top:18px;"><button onclick="createGoal()" class="mainBtn" id="createGoalBtn" style="background:#10b981;color:white;width:100%;">Stwórz cel</button></div>
+</div>
+</div>
+
+<div class="modal" id="historyModal">
+<div class="modalBox" style="padding: 16px;">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+<div id="historyTitle" style="font-size:16px;font-weight:900;text-transform:uppercase;color:#1e293b;">📊 Centrum Danych</div>
+<button onclick="closeHistory()" style="border:none;background:none;font-size:24px;cursor:pointer;">✕</button>
+</div>
+<div style="display:flex; gap:4px; background:#e2e8f0; padding:4px; border-radius:14px; margin-bottom:16px;">
+<button onclick="switchTab('trans')" id="tabTransBtn" class="tab-btn active">📊 <span id="textTabTrans">Transakcje</span></button>
+<button onclick="switchTab('notif')" id="tabNotifBtn" class="tab-btn">🔔 <span id="textTabNotif">Alerty</span></button>
+</div>
+
+<div id="tabTransactionsView">
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+<span id="savedTransLabel" style="font-size:11px; font-weight:800; color:#64748b;">REJESTR TRANSAKCJI</span>
+<button onclick="clearAllTransactions()" id="clearAllTransBtn" style="background:none; border:none; color:#ef4444; font-size:10px; font-weight:900; cursor:pointer;">WYCZYŚĆ WSZYSTKO</button>
+</div>
+<div id="historyWrap" style="display:flex;flex-direction:column;gap:10px;"></div>
+</div>
+
+<div id="tabNotificationsView" style="display:none;">
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+<span id="savedAlertsLabel" style="font-size:11px; font-weight:800; color:#64748b;">ZAPISANE ALERTY</span>
+<button onclick="clearAllNotifications()" id="clearAllNtfBtn" style="background:none; border:none; color:#ef4444; font-size:10px; font-weight:900; cursor:pointer;">WYCZYŚĆ WSZYSTKO</button>
+</div>
+<div id="appNotificationsWrap" style="display:flex;flex-direction:column;gap:10px; max-height:50vh; overflow-y:auto; padding:2px;"></div>
+</div>
+
+</div>
+</div>
+
+<!-- AUTONOMICZNY MODAL ZARZĄDZANIA KARTĄ VIP -->
+<div class="modal" id="cardConfigModal">
+<div class="modalBox" style="padding: 20px; max-width:380px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+        <div style="font-size:15px; font-weight:900; color:#1e293b; text-transform:uppercase;" id="vipPanelTitle">⚙️ PANEL KARTY VIP</div>
+        <button onclick="closeCardConfigModal()" style="border:none;background:none;font-size:24px;cursor:pointer;">✕</button>
+    </div>
+    
+    <div style="padding:10px; display:flex; justify-content:center;">
+        <div id="configCardPreview" class="atm-premium-card" style="margin:0; width:180px; height:110px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div class="card-chip"></div>
+                <div class="card-logo">BGF PRO</div>
+            </div>
+            <div class="card-number" id="pCardNumber">•••• •••• •••• 8888</div>
+            <div class="card-meta">
+                <div class="card-holder" id="pCardHolder">JAN KOWALSKI</div>
+                <div>CVV: <span id="pCardCvv">123</span></div>
+            </div>
+        </div>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:12px; margin-top:10px;">
+        <div>
+            <label style="font-size:10px; font-weight:800; color:#64748b;" id="lblCardColor">KOLOR I DESIGN KARTY</label>
+            <select id="cfgCardColor" onchange="updateCardDataFromInputs()" style="padding:10px; margin-top:4px;"></select>
+        </div>
+        <div>
+            <label style="font-size:10px; font-weight:800; color:#64748b;" id="lblCardNumber">NUMER IBAN / KARTY</label>
+            <input type="text" id="cfgCardNumber" class="underlined-input" oninput="updateCardDataFromInputs()">
+        </div>
+        <div>
+            <label style="font-size:10px; font-weight:800; color:#64748b;" id="lblCardHolder">IMIĘ I NAZWISKO POSIADACZA</label>
+            <input type="text" id="cfgCardHolder" class="underlined-input" oninput="updateCardDataFromInputs()">
+        </div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+            <div>
+                <label style="font-size:10px; font-weight:800; color:#64748b;" id="lblCardCvv">KOD CVC / CCV</label>
+                <input type="text" id="cfgCardCvv" maxlength="3" class="underlined-input" oninput="updateCardDataFromInputs()">
+            </div>
+            <div>
+                <label style="font-size:10px; font-weight:800; color:#64748b;" id="lblCardPin">KOD PIN BANKOMATU</label>
+                <input type="text" id="cfgCardPin" maxlength="4" class="underlined-input" oninput="updateCardDataFromInputs()">
+            </div>
+        </div>
+    </div>
+    <button onclick="closeCardConfigModal()" class="mainBtn" id="saveCardBtn" style="background:#06b6d4; color:white; width:100%; margin-top:16px;">ZAPISZ I ZAMKNIJ</button>
+</div>
+</div>
+
+<div class="modal" id="langModal">
+<div class="modalBox">
+<div style="display:flex;justify-content:space-between;align-items:center;">
+<div id="langModalTitle" style="font-size:18px;font-weight:900;">🌐 Język / Language / Sprache</div>
+<button onclick="closeLangModal()" style="border:none;background:none;font-size:24px;">✕</button>
+</div>
+<div style="margin-top:20px;display:flex;flex-direction:column;gap:12px;"><select id="langSelect" onchange="changeLanguage(this.value)"></select></div>
+<div style="margin-top:20px;"><button onclick="closeLangModal()" class="mainBtn" id="langCloseBtn" style="background:#06b6d4;color:white;width:100%;">OK</button></div>
+</div>
+</div>
+
+<div class="modal" id="testNtfModal">
+<div class="modalBox" style="text-align: center; max-width: 340px;">
+<div style="font-size: 44px; margin-bottom: 10px;">🚀</div>
+<div id="testModalTitle" style="font-size: 16px; font-weight: 900; color: #0f172a; line-height: 1.4;">Wysłaliśmy Ci testowe powiadomienie!</div>
+<div id="testModalDesc" style="font-size: 12px; color: #64748b; margin-top: 8px; margin-bottom: 18px; font-weight: 600;">Opis testu...</div>
+<button onclick="closeTestNtfModal()" class="mainBtn" id="testModalCloseBtn" style="background: #10b981; color: white; width: 100%; padding: 12px;">OK</button>
+</div>
+</div>
+
+</div>
+
+<script>
+function resetVh() {
+    let vh = window.innerHeight * 0.01;
+    document.documentElement.style.setProperty('--vh', `${vh}px`);
+}
+window.addEventListener('resize', resetVh);
+window.addEventListener('orientationchange', resetVh);
+resetVh();
+
+document.body.addEventListener('touchmove', function(e) {
+    if (!e.target.closest('.scroll') && !e.target.closest('.modalBox')) {
+        e.preventDefault();
+    }
+}, { passive: false });
+
+let atmMode="deposit";
+let activeTab="trans";
+let totalTargetAmount = 0;
+let remainingAmount = 0;
+let pendingReason = "";
+let currentDenominationsList = [];
+let currentDenominationIndex = 0;
+let isAiBotRunning = false;
+let cardAuthMethod = "none";
+
+let nfcTimer = null;
+let isNfcTimerActive = false;
+
+const EURO_DENOMINATIONS = [
+    { value: 500, type: "bill", bg: "linear-gradient(135deg, #e9d5ff, #c084fc, #a855f7)", border: "#7e22ce" },
+    { value: 200, type: "bill", bg: "linear-gradient(135deg, #fef08a, #facc15, #eab308)", border: "#a16207" },
+    { value: 100, type: "bill", bg: "linear-gradient(135deg, #bbf7d0, #4ade80, #22c55e)", border: "#15803d" },
+    { value: 50, type: "bill", bg: "linear-gradient(135deg, #fed7aa, #fb923c, #f97316)", border: "#c2410c" },
+    { value: 20, type: "bill", bg: "linear-gradient(135deg, #93c5fd, #60a5fa, #3b82f6)", border: "#1d4ed8" },
+    { value: 10, type: "bill", bg: "linear-gradient(135deg, #fca5a5, #f87171, #ef4444)", border: "#b91c1c" },
+    { value: 5, type: "bill", bg: "linear-gradient(135deg, #cbd5e1, #94a3b8, #64748b)", border: "#475569" },
+    { value: 2, type: "coin", style: "gold-silver" },
+    { value: 1, type: "coin", style: "silver-gold" },
+    { value: 0.50, type: "coin", style: "gold" },
+    { value: 0.20, type: "coin", style: "gold" },
+    { value: 0.10, type: "coin", style: "gold" },
+    { value: 0.05, type: "coin", style: "bronze" },
+    { value: 0.02, type: "coin", style: "bronze" },
+    { value: 0.01, type: "coin", style: "bronze" }
+];
+
+let data={
+lang:"pl",
+balance:0,
+water:0,
+goals:[],
+history:[],
+notificationsLog:[], 
+notificationChoice: "granted",
+garden:[{planted:false},{planted:false},{planted:false},{planted:false}],
+inventory:["🥕","🍅","🧅","🍎","🍓","🍉","🫐","🌽","🍋","🍌","🍇","🥦"],
+hasChosenLangBefore: false,
+cardConfig: {
+    bg: "linear-gradient(135deg, #1e293b, #0f172a, #475569)",
+    number: "4321 8888 9999 7777",
+    holder: "JAN KOWALSKI",
+    cvv: "789",
+    pin: "1234"
+}
+};
+
+const translations = {
+pl: {
+appTitle: "🫧 BĄBELKOWY OGRÓD",
+appSubtitle: "Premium Financial Garden",
+freeFunds: "Wolne środki",
+withGoals: "Z celami (wpłacone):",
+deposit: "💵 WPŁAĆ",
+withdraw: "💸 WYDAJ",
+gardenWater: "💧 Woda ogrodowa",
+waterPlants: "Podlewaj rośliny",
+savingsGoals: "Cele oszczędnościowe",
+newGoal: "+ NOWY",
+yourGarden: "🏡 Twój ogród",
+cancel: "Anuluj",
+confirm: "Zatwierdź",
+newGoalTitle: "🎯 Nowy cel",
+createGoalBtn: "Stwórz cel",
+historyTitle: "📊 Opcje i Rejestry",
+tabTrans: "Transakcje",
+tabNotif: "Alerty",
+savedAlerts: "ZAPISANE ALERTY",
+savedTrans: "REJESTR TRANSAKCJI",
+noGoals: "Brak celów",
+noHistory: "Brak historii",
+emptySoil: "Pusta gleba",
+plantPlant: "Roślina",
+plants: [
+  "Marchewka 🥕", "Pomidor 🍅", "Cebula 🧅", "Jabłoń 🍎",
+  "Truskawka 🍓", "Arbuz 🍉", "Borówka 🫐", "Kukurydza 🌽",
+  "Cytryna 🍋", "Banan 🍌", "Winogrono 🍇", "Brokuł 🥦"
+],
+atmAmountPlh: "Kwota €",
+atmReasonPlh: "Powód (opcjonalnie)",
+goalNamePlh: "Np. Telefon",
+goalTargetPlh: "Kwota docelowa €",
+langModalTitle: "🌐 Wybierz język",
+langCloseBtn: "Zamknij",
+alertNoMoney: "Nie masz tylu pieniędzy w portfelu!",
+alertNoFunds: "Brak środków na koncie!",
+alertNoSeeds: "Brak nasion! Poczekaj na zbiory.",
+alertNoWater: "Brak wody w konewce!",
+alertLowSavings: "Za mało oszczędności w tym celu!",
+alertGoalOverflow: "Nie można wpłacić nadmiaru pieniędzy na ten cel!",
+promptAddGoal: "Ile € chcesz przelać na ten cel?",
+histDeposit: "💵 Wpłata",
+histWithdrawDefault: "💸 Wypłata",
+histWithdrawReason: "💸 Wydano na: ",
+histGoal: "🫧 Przelew na marzenie: ",
+histBuy: "🛍️ Kupiono marzenie: ",
+goalBtnAdd: "💵",
+goalBtnBuy: "🛍️ Kup",
+ntfDeposit: "Pomyślnie wpłacono: +",
+ntfWithdraw: "Pomyślnie wydano: -",
+ntfWithdrawFor: " na: ",
+ntfNewGoal: "Dodano nowy cel: ",
+ntfGoalAdded: "Wpłacono na cel ",
+ntfGoalSuccess: "🎉 Cel osiągnięty! Kupiono: ",
+ntfHarvest: "🌱 Roślina wyrosła! Warzywo/Owoc zebrane.",
+clearAllBtn: "WYCZYŚĆ WSZYSTKO",
+noNotifications: "Brak powiadomień",
+statusActive: "Powiadomienia pop-up: WŁĄCZONE",
+statusDisabled: "Powiadomienia pop-up: WYŁĄCZONE",
+testBtn: "🧪 TESTUJ POWIADOMIENIA",
+testModalTitle: "Wysłaliśmy powiadomienie!",
+testModalDesc: "Wyskoczyło na samej górze aplikacji jako dymek baneru i trafiło do rejestru.",
+testSuccessMsg: "🧪 Test powiadomień udany! System banerów działa poprawnie.",
+atmDragInst: "Wsuń nominał głęboko do szczeliny bankomatu! 📥",
+atmPrintInst: "Wyciągnij nominał ze szczeliny w dół! 📥",
+scrRemaining: "Do rozliczenia: ",
+scrDepositStatus: "STATUS: WPŁACANIE (Nominał ",
+scrWithdrawStatus: "STATUS: WYPŁACANIE (Nominał ",
+scrOf: " z ",
+aiBotRunning: "🤖 BOT WPŁACA AUTOMATYCZNIE...",
+atmTitleText: "🏧 Realistyczny Bankomat",
+aiBotBtnText: "⚡ AI-BOT (Szybka operacja)",
+atmAbortBtnText: "⬅️ Przerwij",
+bannerHeaderName: "Powiadomienie",
+langNames: { pl: "Polski", en: "English", de: "Deutsch" },
+atmCardScrStatus: "WITAMY W BANKOMACIE KLIENTA VIP!",
+atmCardScrDesc: "Aby zweryfikować twoją kartę, wsuń ją do szczeliny lub przytrzymaj nad polem NFC...",
+atmCardInstText: "Wsuń kartę do szczeliny lub przytrzymaj nad polem NFC:",
+atmCardScrSuccess: "KARTA ZAAKCEPTOWANA! ODBIERZ KARTĘ",
+mainCardTitle: "KARTA PŁATNICZA VIP",
+mainCardSettingsBtn: "USTAWIENIA ⚙️",
+slotInsertLabel: "Wsuń tutaj",
+nfcHoldLabel: "Przytrzymaj (0.5s)",
+nfcHoldText: "⏳ TRZYMAJ PÓŁ SEKUNDY...",
+nfcSuccessText: "📶 ZBLIŻENIE OK!",
+ejectCardHeader: "⚠️ NAJPIERW ODBIERZ KARTĘ",
+atmEjectScreenDesc: "Karta została odczytana. Kliknij ją i wyjmij ze szczeliny, aby przejść dalej!",
+pullCardLabel: "Wyciągnij kartę w dół",
+enterPinHeader: "🔑 PODAJ KOD PIN KARTY",
+enterPinSubheader: "Wpisz 4 cyfry, aby autoryzować sesję",
+pinError: "Niepoprawny PIN! Spróbuj ponownie.",
+pinConfirmBtn: "Zatwierdź PIN",
+ultraFastBtn: "⚡ ULTRA SZYBKA WPŁATA (>2000€)",
+slotNameLabel: "Szczelina",
+vipPanelTitle: "⚙️ PANEL KARTY VIP",
+lblCardColor: "KOLOR I DESIGN KARTY",
+lblCardNumber: "NUMER IBAN / KARTY",
+lblCardHolder: "IMIĘ I NAZWISKO POSIADACZA",
+lblCardCvv: "KOD CVC / CCV",
+lblCardPin: "KOD PIN BANKOMATU",
+saveCardBtn: "ZAPISZ I ZAMKNIJ",
+waterPlantBtn: "💧 PODLEJ",
+stageLabel: "Faza: ",
+cardColors: [
+  { val: "linear-gradient(135deg, #1e293b, #0f172a, #475569)", text: "Ciemny Grafit (Default)" },
+  { val: "linear-gradient(135deg, #b45309, #78350f, #7c2d12)", text: "Królewskie Złoto & Brąz" },
+  { val: "linear-gradient(135deg, #1e3a8a, #172554, #1d4ed8)", text: "Głęboki Ocean" },
+  { val: "linear-gradient(135deg, #701a75, #4a044e, #a21caf)", text: "Ekskluzywny Purpur" },
+  { val: "linear-gradient(135deg, #065f46, #022c22, #047857)", text: "Szmaragdowy Mat" }
+]
+},
+en: {
+appTitle: "🫧 BUBBLE GARDEN",
+appSubtitle: "Premium Financial Garden",
+freeFunds: "Available funds",
+withGoals: "With goals (deposited):",
+deposit: "💵 DEPOSIT",
+withdraw: "💸 SPEND",
+gardenWater: "💧 Garden water",
+waterPlants: "Water your plants",
+savingsGoals: "Savings goals",
+newGoal: "+ NEW",
+yourGarden: "🏡 Your garden",
+cancel: "Cancel",
+confirm: "Confirm",
+newGoalTitle: "🎯 New goal",
+createGoalBtn: "Create goal",
+historyTitle: "📊 Options & Records",
+tabTrans: "Transactions",
+tabNotif: "Alerts",
+savedAlerts: "SAVED ALERTS",
+savedTrans: "TRANSACTION LOG",
+noGoals: "No goals",
+noHistory: "No history",
+emptySoil: "Empty soil",
+plantPlant: "Plant",
+plants: [
+  "Carrot 🥕", "Tomato 🍅", "Onion 🧅", "Apple tree 🍎",
+  "Strawberry 🍓", "Watermelon 🍉", "Blueberry 🫐", "Corn 🌽",
+  "Lemon 🍋", "Banana 🍌", "Grape 🍇", "Broccoli 🥦"
+],
+atmAmountPlh: "Amount €",
+atmReasonPlh: "Reason (optional)",
+goalNamePlh: "E.g. Phone",
+goalTargetPlh: "Target amount €",
+langModalTitle: "🌐 Select language",
+langCloseBtn: "Close",
+alertNoMoney: "You don't have that much money in your wallet!",
+alertNoFunds: "Insufficient funds!",
+alertNoSeeds: "No seeds available!",
+alertNoWater: "No water in your watering can!",
+alertLowSavings: "Not enough savings in this goal!",
+alertGoalOverflow: "You cannot deposit excess money into this goal!",
+promptAddGoal: "How many € do you want to transfer to this goal?",
+histDeposit: "💵 Deposit",
+histWithdrawDefault: "💸 Withdrawal",
+histWithdrawReason: "💸 Spent on: ",
+histGoal: "🫧 Contributed to dream: ",
+histBuy: "🛍️ Bought dream: ",
+goalBtnAdd: "💵",
+goalBtnBuy: "🛍️ Buy",
+ntfDeposit: "Successfully deposited: +",
+ntfWithdraw: "Successfully spent: -",
+ntfWithdrawFor: " for: ",
+ntfNewGoal: "Added new goal: ",
+ntfGoalAdded: "Contributed to goal ",
+ntfGoalSuccess: "🎉 Goal achieved! Bought: ",
+ntfHarvest: "🌱 Plant fully grown! Harvested.",
+clearAllBtn: "CLEAR ALL",
+noNotifications: "No notifications",
+statusActive: "Pop-up alerts: ENABLED",
+statusDisabled: "Pop-up alerts: DISABLED",
+testBtn: "🧪 TEST NOTIFICATIONS",
+testModalTitle: "Notification sent!",
+testModalDesc: "It just slid in at the very top of your application as a banner bubble.",
+testSuccessMsg: "🧪 Notification test successful! Upper banner system is stable.",
+atmDragInst: "Insert the money deep into the ATM slot! 📥",
+atmPrintInst: "Pull the money down out of the slot! 📥",
+scrRemaining: "Remaining: ",
+scrDepositStatus: "STATUS: DEPOSITING (Item ",
+scrWithdrawStatus: "STATUS: WITHDRAWING (Item ",
+scrOf: " of ",
+aiBotRunning: "🤖 BOT OPERATING AUTOMATICALLY...",
+atmTitleText: "ATM Machine",
+aiBotBtnText: "⚡ AI-BOT (Fast)",
+atmAbortBtnText: "⬅️ Abort",
+bannerHeaderName: "Notification",
+langNames: { pl: "Polish", en: "English", de: "German" },
+atmCardScrStatus: "WELCOME TO VIP CLIENT ATM!",
+atmCardScrDesc: "To verify your card, insert it into the slot or hold it over the NFC area...",
+atmCardInstText: "Insert card into slot or close to NFC area:",
+atmCardScrSuccess: "CARD ACCEPTED! REMOVE CARD",
+mainCardTitle: "VIP PAYMENT CARD",
+mainCardSettingsBtn: "SETTINGS ⚙️",
+slotInsertLabel: "Insert here",
+nfcHoldLabel: "Hold (0.5s)",
+nfcHoldText: "⏳ HOLD HALF A SECOND...",
+nfcSuccessText: "📶 TAP OK!",
+ejectCardHeader: "⚠️ REMOVE CARD FIRST",
+atmEjectScreenDesc: "Card has been read. Click and pull it out of the slot to continue!",
+pullCardLabel: "Pull card down",
+enterPinHeader: "🔑 ENTER CARD PIN CODE",
+enterPinSubheader: "Type 4 digits to authorize session",
+pinError: "Incorrect PIN! Try again.",
+pinConfirmBtn: "Confirm PIN",
+ultraFastBtn: "⚡ ULTRA FAST DEPOSIT (>2000€)",
+slotNameLabel: "Slot",
+vipPanelTitle: "⚙️ VIP CARD PANEL",
+lblCardColor: "CARD COLOR & DESIGN",
+lblCardNumber: "IBAN / CARD NUMBER",
+lblCardHolder: "CARD HOLDER NAME",
+lblCardCvv: "CVC / CCV CODE",
+lblCardPin: "ATM PIN CODE",
+saveCardBtn: "SAVE & CLOSE",
+waterPlantBtn: "💧 WATER",
+stageLabel: "Stage: ",
+cardColors: [
+  { val: "linear-gradient(135deg, #1e293b, #0f172a, #475569)", text: "Dark Graphite (Default)" },
+  { val: "linear-gradient(135deg, #b45309, #78350f, #7c2d12)", text: "Royal Gold & Brown" },
+  { val: "linear-gradient(135deg, #1e3a8a, #172554, #1d4ed8)", text: "Deep Ocean" },
+  { val: "linear-gradient(135deg, #701a75, #4a044e, #a21caf)", text: "Exclusive Purple" },
+  { val: "linear-gradient(135deg, #065f46, #022c22, #047857)", text: "Emerald Matte" }
+]
+},
+de: {
+appTitle: "🫧 BLASENGARTEN",
+appSubtitle: "Premium Financial Garden",
+freeFunds: "Verfügbares Guthaben",
+withGoals: "Mit Zielen (eingezahlt):",
+deposit: "💵 EINZAHLEN",
+withdraw: "💸 AUSGEBEN",
+gardenWater: "💧 Gartenwasser",
+waterPlants: "Pflanzen gießen",
+savingsGoals: "Sparziele",
+newGoal: "+ NEU",
+yourGarden: "🏡 Ihr Garten",
+cancel: "Abbrechen",
+confirm: "Bestätigen",
+newGoalTitle: "🎯 Neues Ziel",
+createGoalBtn: "Ziel erstellen",
+historyTitle: "📊 Optionen & Protokolle",
+tabTrans: "Transaktionen",
+tabNotif: "Alerts",
+savedAlerts: "GESPEICHERTE ALERTS",
+savedTrans: "TRANSAKTIONSPROTOKOLL",
+noGoals: "Keine Ziele",
+noHistory: "Kein Verlauf",
+emptySoil: "Leerer Boden",
+plantPlant: "Pflanze",
+plants: [
+  "Karotte 🥕", "Tomate 🍅", "Zwiebel 🧅", "Apfelbaum 🍎",
+  "Erdbeere 🍓", "Wassermelone 🍉", "Blaubeere 🫐", "Mais 🌽",
+  "Zitrone 🍋", "Banane 🍌", "Weintraube 🍇", "Brokkoli 🥦"
+],
+atmAmountPlh: "Betrag €",
+atmReasonPlh: "Grund (optional)",
+goalNamePlh: "Z.B. Telefon",
+goalTargetPlh: "Zielbetrag €",
+langModalTitle: "🌐 Sprache wählen",
+langCloseBtn: "Schließen",
+alertNoMoney: "Sie haben nicht so viel Geld in Ihrem Portemonnaie!",
+alertNoFunds: "Nicht genügend Guthaben!",
+alertNoSeeds: "Keine Samen vorhanden!",
+alertNoWater: "Kein Wasser in der Gießkanne!",
+alertLowSavings: "Nicht genug Ersparnisse für dieses Ziel!",
+alertGoalOverflow: "Sie können nicht mehr Geld auf dieses Ziel einzahlen als nötig!",
+promptAddGoal: "Wie viele € möchten Sie auf dieses Ziel übertragen?",
+histDeposit: "💵 Einzahlung",
+histWithdrawDefault: "💸 Auszahlung",
+histWithdrawReason: "💸 Ausgegeben für: ",
+histGoal: "🫧 Eingezahlt für den Traum: ",
+histBuy: "🛍️ Traum gekauft: ",
+goalBtnAdd: "💵",
+goalBtnBuy: "🛍️ Kaufen",
+ntfDeposit: "Erfolgreich eingezahlt: +",
+ntfWithdraw: "Erfolgreich ausgegeben: -",
+ntfWithdrawFor: " für: ",
+ntfNewGoal: "Neues Ziel hinzugefügt: ",
+ntfGoalAdded: "Eingezahlt für das Ziel ",
+ntfGoalSuccess: "🎉 Ziel erreicht! Gekauft: ",
+ntfHarvest: "🌱 Pflanze ausgewachsen! Geerntet.",
+clearAllBtn: "ALLES LÖSCHEN",
+noNotifications: "Keine Benachrichtigungen",
+statusActive: "Pop-up-Benachrichtigungen: AKTIVIERT",
+statusDisabled: "Pop-up-Benachrichtigungen: DEAKTIVIERT",
+testBtn: "🧪 BENACHRICHTIGUNGSTEST",
+testModalTitle: "Benachrichtigung gesendet!",
+testModalDesc: "Es ist gerade ganz oben in Ihrer App als Banner-Blase aufgetaucht.",
+testSuccessMsg: "🧪 Benachrichtigungstest erfolgreich! Das Banner-System läuft einwandfrei.",
+atmDragInst: "Geld tief in den ATM-Schlitz einführen! 📥",
+atmPrintInst: "Ziehen Sie das Geld aus dem Schlitz nach unten heraus! 📥",
+scrRemaining: "Restbetrag: ",
+scrDepositStatus: "STATUS: EINZAHLUNG (Teil ",
+scrWithdrawStatus: "STATUS: AUSZAHLUNG (Teil ",
+scrOf: " von ",
+aiBotRunning: "🤖 BOT AGIERT AUTOMATISCH...",
+atmTitleText: "Geldautomat",
+aiBotBtnText: "⚡ AI-BOT (Schnell)",
+atmAbortBtnText: "⬅️ Abbrechen",
+bannerHeaderName: "Benachrichtigung",
+langNames: { pl: "Polnisch", en: "Englisch", de: "Deutsch" },
+atmCardScrStatus: "WILLKOMMEN AM VIP-KUNDEN GELDAUTOMATEN!",
+atmCardScrDesc: "Um Ihre Karte zu verifizieren, führen Sie sie in den Schlitz ein oder halten Sie sie über das NFC-Feld...",
+atmCardInstText: "Karte in den Schlitz einführen oder NFC nähren:",
+atmCardScrSuccess: "KARTE AKZEPTIERT! KARTE ENTFERNEN",
+mainCardTitle: "VIP ZAHLUNGSKARTE",
+mainCardSettingsBtn: "EINSTELLUNGEN ⚙️",
+slotInsertLabel: "Hier einführen",
+nfcHoldLabel: "Halten (0.5s)",
+nfcHoldText: "⏳ HALBE SEKUNDE HALTEN...",
+nfcSuccessText: "📶 NÄHERUNG OK!",
+ejectCardHeader: "⚠️ ZUERST KARTE ENTFERNEN",
+atmEjectScreenDesc: "Karte wurde gelesen. Klicken und aus dem Schlitz ziehen!",
+pullCardLabel: "Karte nach unten ziehen",
+enterPinHeader: "🔑 CARD PIN CODE EINGEBEN",
+enterPinSubheader: "4 Ziffern eingeben um Sitzung zu autorisieren",
+pinError: "Falsche PIN! Versuchen Sie es erneut.",
+pinConfirmBtn: "PIN Bestätigen",
+ultraFastBtn: "⚡ ULTRA SCHNELLE EINZAHLUNG (>2000€)",
+slotNameLabel: "Schlitz",
+vipPanelTitle: "⚙️ VIP KARTEN PANEL",
+lblCardColor: "KARTENFARBE & DESIGN",
+lblCardNumber: "IBAN / KARTENNUMMER",
+lblCardHolder: "INHABERNAME",
+lblCardCvv: "CVC / CCV CODE",
+lblCardPin: "ATM PIN CODE",
+saveCardBtn: "SPEICHERN & SCHLIESSEN",
+waterPlantBtn: "💧 GIESSEN",
+stageLabel: "Phase: ",
+cardColors: [
+  { val: "linear-gradient(135deg, #1e293b, #0f172a, #475569)", text: "Dunkler Graphit (Standard)" },
+  { val: "linear-gradient(135deg, #b45309, #78350f, #7c2d12)", text: "Königliches Gold & Braun" },
+  { val: "linear-gradient(135deg, #1e3a8a, #172554, #1d4ed8)", text: "Tiefer Ozean" },
+  { val: "linear-gradient(135deg, #701a75, #4a044e, #a21caf)", text: "Exklusives Purpur" },
+  { val: "linear-gradient(135deg, #065f46, #022c22, #047857)", text: "Smaragd Mat" }
+]
+}
+};
+
+function breakAmountIntoDenominations(amount) {
+    let remaining = amount;
+    let list = [];
+    for (let denom of EURO_DENOMINATIONS) {
+        while (remaining >= denom.value - 0.00001) {
+            list.push({ ...denom });
+            remaining -= denom.value;
+        }
+    }
+    return list;
+}
+
+function checkUltraFastDepositOption() {
+    const val = parseFloat(document.getElementById("atmAmount").value.replace(',', '.'));
+    const wrap = document.getElementById("ultraFastDepositBtnWrap");
+    if(atmMode === "deposit" && !isNaN(val) && val > 2000) {
+        wrap.style.display = "block";
+    } else {
+        wrap.style.display = "none";
+    }
+}
+
+function triggerUltraFastDeposit() {
+    const amount = parseFloat(document.getElementById("atmAmount").value.replace(',', '.'));
+    const reason = document.getElementById("atmReason").value;
+    if (isNaN(amount) || amount <= 0) return;
+    
+    totalTargetAmount = amount;
+    pendingReason = reason;
+    executeFinalTransaction();
+}
+
+function startAtmInteraction() {
+    const t = translations[data.lang];
+    const amount = parseFloat(document.getElementById("atmAmount").value.replace(',', '.'));
+    const reason = document.getElementById("atmReason").value;
+
+    if (isNaN(amount) || amount <= 0) return;
+    if (atmMode === "withdraw" && amount > data.balance) {
+        alert(t.alertNoMoney);
+        return;
+    }
+
+    document.getElementById("atmAmount").blur();
+    document.getElementById("atmReason").blur();
+
+    totalTargetAmount = amount;
+    remainingAmount = amount;
+    pendingReason = reason;
+    currentDenominationsList = breakAmountIntoDenominations(amount);
+    currentDenominationIndex = 0;
+    isAiBotRunning = false;
+
+    document.getElementById("atmSetupStage").style.display = "none";
+    document.getElementById("atmInteractiveStage").style.display = "block";
+    
+    document.getElementById("aiBotBtn").style.opacity = "1";
+    document.getElementById("aiBotBtn").disabled = false;
+    document.getElementById("atmAbortBtn").style.display = "inline-block";
+    document.getElementById("atmTopCloseBtn").style.display = "inline-block";
+
+    processNextDenomination();
+}
+
+function resetAtmStage() {
+    if(isAiBotRunning) return;
+    isAiBotRunning = false;
+    cardAuthMethod = "none";
+    if (nfcTimer) { clearTimeout(nfcTimer); nfcTimer = null; }
+    isNfcTimerActive = false;
+
+    const t = translations[data.lang];
+    document.getElementById("atmCardAuthStage").style.display = "block";
+    document.getElementById("atmCardEjectStage").style.display = "none";
+    document.getElementById("atmPinStage").style.display = "none";
+    document.getElementById("atmSetupStage").style.display = "none";
+    document.getElementById("atmInteractiveStage").style.display = "none";
+    
+    document.getElementById("atmCardScreenStatus").innerText = t.atmCardScrStatus;
+    document.getElementById("atmCardScreenStatus").style.color = "#fbbf24";
+    document.getElementById("atmCardScreenDesc").innerText = t.atmCardScrDesc;
+
+    document.getElementById("atmAmount").value = "";
+    document.getElementById("atmReason").value = "";
+    document.getElementById("atmPinInput").value = "";
+    document.getElementById("atmPinError").style.display = "none";
+    document.getElementById("ultraFastDepositBtnWrap").style.display = "none";
+    
+    const card = document.getElementById("draggableAtmCard");
+    card.style.transition = "none";
+    card.style.transform = "translate(0px, 0px) scale(1)";
+    card.style.opacity = "1";
+    
+    syncCardVisuals();
+    initAtmCardDrag();
+}
+
+function processNextDenomination() {
+    const t = translations[data.lang];
+    const dispenser = document.getElementById("moneyDispenser");
+    const targetSlot = document.getElementById("atmSlotTarget");
+    const instText = document.getElementById("atmInstructionText");
+    const screenStatus = document.getElementById("atmScreenStatus");
+    const screenRemaining = document.getElementById("atmScreenRemaining");
+
+    dispenser.innerHTML = "";
+    targetSlot.innerHTML = "";
+
+    if (currentDenominationIndex >= currentDenominationsList.length) {
+        executeFinalTransaction();
+        return;
+    }
+
+    const currentItem = currentDenominationsList[currentDenominationIndex];
+    screenRemaining.innerText = `${t.scrRemaining}${remainingAmount} €`;
+    const progressText = `${currentDenominationIndex + 1}${t.scrOf}${currentDenominationsList.length})`;
+    
+    if(isAiBotRunning) {
+        screenStatus.innerText = t.aiBotRunning;
+        instText.innerText = "⚡ AI-BOT...";
+    } else {
+        if (atmMode === "deposit") {
+            screenStatus.innerText = `${t.scrDepositStatus}${progressText}`;
+            instText.innerText = t.atmDragInst;
+        } else {
+            screenStatus.innerText = `${t.scrWithdrawStatus}${progressText}`;
+            instText.innerText = t.atmPrintInst;
+        }
+    }
+
+    const moneyEl = document.createElement("div");
+    moneyEl.className = "draggable-money";
+
+    let labelValue = currentItem.value >= 1 ? `${currentItem.value}` : `${currentItem.value * 100}`;
+    let labelUnit = currentItem.value >= 1 ? `EURO` : `CENT`;
+
+    if (currentItem.type === "bill") {
+        moneyEl.innerHTML = `
+            <div class="real-bill" style="background: ${currentItem.bg}; border-color: ${currentItem.border};">
+                <div class="bill-center-value">${labelValue}</div>
+                <div class="bill-bottom-text">${labelValue} ${labelUnit}</div>
+            </div>
+        `;
+    } else {
+        let coinClass = "real-coin";
+        if (currentItem.style === "silver-gold" || currentItem.style === "silver") {
+            coinClass += " silver";
+        } else if (currentItem.style === "bronze") {
+            coinClass += " !bg-gradient-to-br !from-amber-700 !to-amber-900 !border-amber-950 !color-amber-200";
+        }
+        moneyEl.innerHTML = `
+            <div class="${coinClass}">
+                <div class="coin-value">${labelValue}</div>
+                <div class="coin-unit">${labelUnit === "EURO" ? "€" : "ct"}</div>
+            </div>
+        `;
+    }
+
+    if (atmMode === "deposit") {
+        dispenser.appendChild(moneyEl);
+    } else {
+        moneyEl.style.position = "absolute";
+        targetSlot.appendChild(moneyEl);
+    }
+
+    if(isAiBotRunning) {
+        setTimeout(() => {
+            if(atmMode === "deposit") {
+                moneyEl.classList.add("auto-flying");
+            } else {
+                moneyEl.classList.add("auto-flying-from");
+            }
+            setTimeout(() => {
+                remainingAmount = Math.max(0, remainingAmount - currentItem.value);
+                currentDenominationIndex++;
+                processNextDenomination();
+            }, 250);
+        }, 300);
+        return;
+    }
+
+    initDragAndDrop(moneyEl, currentItem.value);
+}
+
+function triggerAiBotFastExecution() {
+    isAiBotRunning = true;
+    document.getElementById("aiBotBtn").style.opacity = "0.4";
+    document.getElementById("aiBotBtn").disabled = true;
+    document.getElementById("atmAbortBtn").style.display = "none";
+    document.getElementById("atmTopCloseBtn").style.display = "none";
+    processNextDenomination();
+}
+
+function initDragAndDrop(el, value) {
+    let isDragging = false;
+    let startX = 0, startY = 0;
+    let currentX = 0, currentY = 0;
+    
+    const targetSlot = document.getElementById("atmSlotTarget");
+    const dispenser = document.getElementById("moneyDispenser");
+
+    const startEvent = (e) => {
+        if(isAiBotRunning) return;
+        isDragging = true;
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        startX = clientX - currentX;
+        startY = clientY - currentY;
+        el.style.transition = "none";
+    };
+
+    const moveEvent = (e) => {
+        if (!isDragging || isAiBotRunning) return;
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        currentX = clientX - startX;
+        currentY = clientY - startY;
+
+        el.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
+
+        const slotRect = targetSlot.getBoundingClientRect();
+        const dispenserRect = dispenser.getBoundingClientRect();
+        const moneyRect = el.getBoundingClientRect();
+
+        const moneyCenterX = moneyRect.left + (moneyRect.width / 2);
+        const moneyCenterY = moneyRect.top + (moneyRect.height / 2);
+
+        if (atmMode === "deposit") {
+            const slotCenterX = slotRect.left + (slotRect.width / 2);
+            const slotCenterY = slotRect.top + (slotRect.height / 2);
+            const distanceX = Math.abs(moneyCenterX - slotCenterX);
+            const distanceY = Math.abs(moneyCenterY - slotCenterY);
+
+            if (distanceY < 55 && distanceX < 120) {
+                isDragging = false;
+                cleanListeners();
+                
+                targetSlot.style.borderColor = "#10b981";
+                targetSlot.style.boxShadow = "0 0 25px rgba(16,185,129,0.9)";
+                
+                el.style.transition = "all 0.25s ease-in-out";
+                el.style.transform = `translate3d(${currentX}px, ${currentY - 60}px, 0) scale(0.1)`;
+                el.style.opacity = "0";
+
+                setTimeout(() => {
+                    targetSlot.style.borderColor = "#06b6d4";
+                    targetSlot.style.boxShadow = "0 0 15px rgba(6,182,212,0.6)";
+                    
+                    remainingAmount = Math.max(0, remainingAmount - value);
+                    currentDenominationIndex++;
+                    processNextDenomination();
+                }, 250);
+            }
+        } else {
+            if (moneyCenterX > dispenserRect.left && moneyCenterX < dispenserRect.right &&
+                moneyCenterY > dispenserRect.top && moneyCenterY < dispenserRect.bottom) {
+                
+                isDragging = false;
+                cleanListeners();
+                
+                dispenser.style.borderColor = "#10b981";
+                dispenser.style.background = "rgba(16,185,129,0.1)";
+                
+                el.style.transition = "all 0.25s ease-in-out";
+                el.style.transform = `translate3d(${currentX}px, ${currentY + 40}px, 0) scale(0.2)`;
+                el.style.opacity = "0";
+
+                setTimeout(() => {
+                    dispenser.style.borderColor = "rgba(255,255,255,0.1)";
+                    dispenser.style.background = "rgba(0,0,0,0.2)";
+                    
+                    remainingAmount = Math.max(0, remainingAmount - value);
+                    currentDenominationIndex++;
+                    processNextDenomination();
+                }, 250);
+            }
+        }
+    };
+
+    const endEvent = () => {
+        if (!isDragging) return;
+        isDragging = false;
+        el.style.transition = "transform 0.3s cubic-bezier(0.25, 1, 0.5, 1)";
+        el.style.transform = "translate3d(0px, 0px, 0)";
+        currentX = 0;
+        currentY = 0;
+    };
+
+    function cleanListeners() {
+        document.removeEventListener("mousemove", moveEvent);
+        document.removeEventListener("mouseup", endEvent);
+        document.removeEventListener("touchmove", moveEvent);
+        document.removeEventListener("touchend", endEvent);
+    }
+
+    el.addEventListener("mousedown", startEvent);
+    document.addEventListener("mousemove", moveEvent);
+    document.addEventListener("mouseup", endEvent);
+    el.addEventListener("touchstart", startEvent, { passive: true });
+    document.addEventListener("touchmove", moveEvent, { passive: false });
+    document.addEventListener("touchend", endEvent);
+}
+
+function initAtmCardDrag() {
+    const card = document.getElementById("draggableAtmCard");
+    const slotTarget = document.getElementById("atmCardSlotTarget");
+    const nfcField = document.getElementById("atmNfcField");
+    
+    let isDragging = false;
+    let startX = 0, startY = 0;
+    let currentX = 0, currentY = 0;
+
+    const startEvent = (e) => {
+        isDragging = true;
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        startX = clientX - currentX;
+        startY = clientY - currentY;
+        card.style.transition = "none";
+    };
+
+    const moveEvent = (e) => {
+        if (!isDragging) return;
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        currentX = clientX - startX;
+        currentY = clientY - startY;
+        card.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
+
+        const slotRect = slotTarget.getBoundingClientRect();
+        const nfcRect = nfcField.getBoundingClientRect();
+        const cardRect = card.getBoundingClientRect();
+        
+        const cardCenterX = cardRect.left + (cardRect.width / 2);
+        const cardCenterY = cardRect.top + (cardRect.height / 2);
+
+        const nfcCenterX = nfcRect.left + (nfcRect.width / 2);
+        const nfcCenterY = nfcRect.top + (nfcRect.height / 2);
+        if (Math.abs(cardCenterY - nfcCenterY) < 45 && Math.abs(cardCenterX - nfcCenterX) < 45) {
+            if (!isNfcTimerActive) {
+                isNfcTimerActive = true;
+                document.getElementById("atmCardScreenStatus").innerText = translations[data.lang].nfcHoldText;
+                nfcTimer = setTimeout(() => {
+                    isDragging = false;
+                    cleanCardListeners();
+                    cardAuthMethod = "nfc";
+                    triggerNfcTapAuthVisuals();
+                }, 500);
+            }
+        } else {
+            if (isNfcTimerActive) {
+                clearTimeout(nfcTimer);
+                nfcTimer = null;
+                isNfcTimerActive = false;
+                document.getElementById("atmCardScreenStatus").innerText = translations[data.lang].atmCardScrStatus;
+            }
+        }
+
+        const slotCenterX = slotRect.left + (slotRect.width / 2);
+        const slotCenterY = slotRect.top + (slotRect.height / 2);
+        if (Math.abs(cardCenterY - slotCenterY) < 35 && Math.abs(cardCenterX - slotCenterX) < 90) {
+            if (nfcTimer) clearTimeout(nfcTimer);
+            isDragging = false;
+            cleanCardListeners();
+            cardAuthMethod = "slot";
+            handleCardAuthSuccess(currentX, currentY - 50, false);
+        }
+    };
+
+    const endEvent = () => {
+        if (isNfcTimerActive) {
+            clearTimeout(nfcTimer);
+            nfcTimer = null;
+            isNfcTimerActive = false;
+            document.getElementById("atmCardScreenStatus").innerText = translations[data.lang].atmCardScrStatus;
+        }
+        if (!isDragging) return;
+        isDragging = false;
+        card.style.transition = "transform 0.3s cubic-bezier(0.25, 1, 0.5, 1)";
+        card.style.transform = "translate3d(0px, 0px, 0)";
+        currentX = 0;
+        currentY = 0;
+    };
+
+    function cleanCardListeners() {
+        card.removeEventListener("mousedown", startEvent);
+        document.removeEventListener("mousemove", moveEvent);
+        document.removeEventListener("mouseup", endEvent);
+        card.removeEventListener("touchstart", startEvent);
+        document.removeEventListener("touchmove", moveEvent);
+        document.removeEventListener("touchend", endEvent);
+    }
+
+    card.addEventListener("mousedown", startEvent);
+    document.addEventListener("mousemove", moveEvent);
+    document.addEventListener("mouseup", endEvent);
+    card.addEventListener("touchstart", startEvent, { passive: true });
+    document.addEventListener("touchmove", moveEvent, { passive: false });
+    document.addEventListener("touchend", endEvent);
+}
+
+function triggerNfcTapAuthVisuals() {
+    const nfcField = document.getElementById("atmNfcField");
+    const statusText = document.getElementById("atmCardScreenStatus");
+    
+    nfcField.style.background = "rgba(16,185,129,0.3)";
+    nfcField.style.borderColor = "#10b981";
+    statusText.innerText = translations[data.lang].nfcSuccessText;
+    
+    setTimeout(() => {
+        nfcField.style.background = "rgba(6,182,212,0.05)";
+        nfcField.style.borderColor = "#06b6d4";
+        handleCardAuthSuccess(0, 0, true);
+    }, 400);
+}
+
+function handleCardAuthSuccess(x, y, isNfc = false) {
+    const t = translations[data.lang];
+    const statusText = document.getElementById("atmCardScreenStatus");
+    const descText = document.getElementById("atmCardScreenDesc");
+    const card = document.getElementById("draggableAtmCard");
+    
+    statusText.innerText = t.atmCardScrSuccess;
+    statusText.style.color = "#10b981";
+    descText.innerText = "Access Granted • VIP Member Profile";
+    
+    if(!isNfc) {
+        card.style.transition = "all 0.25s ease-in-out";
+        card.style.transform = `translate3d(${x}px, ${y}px, 0) scale(0.05)`;
+        card.style.opacity = "0";
+    }
+
+    setTimeout(() => {
+        if(isNfc) {
+            authorizeViaNfc();
+        } else {
+            showEjectCardStage();
+        }
+    }, 600);
+}
+
+function authorizeViaNfc() {
+    showPinStage();
+}
+
+function showEjectCardStage() {
+    document.getElementById("atmCardAuthStage").style.display = "none";
+    document.getElementById("atmCardEjectStage").style.display = "block";
+    
+    const ejectContainer = document.getElementById("atmEjectCardContainer");
+    ejectContainer.innerHTML = "";
+    
+    const returnCard = document.createElement("div");
+    returnCard.className = "atm-premium-card printed-money";
+    returnCard.style.cursor = "pointer";
+    returnCard.style.margin = "0";
+    returnCard.style.background = data.cardConfig.bg;
+    
+    returnCard.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div class="card-chip"></div>
+            <div class="card-logo">BGF PRO</div>
+        </div>
+        <div class="card-number">${data.cardConfig.number}</div>
+        <div class="card-meta">
+            <div class="card-holder">${data.cardConfig.holder}</div>
+            <div>CVV: ${data.cardConfig.cvv}</div>
+        </div>
+    `;
+    
+    returnCard.onclick = function() {
+        returnCard.style.transition = "transform 0.3s ease-out, opacity 0.3s";
+        returnCard.style.transform = "translateY(80px) scale(0.4)";
+        returnCard.style.opacity = "0";
+        setTimeout(() => {
+            showPinStage();
+        }, 300);
+    };
+    
+    ejectContainer.appendChild(returnCard);
+}
+
+function showPinStage() {
+    document.getElementById("atmCardAuthStage").style.display = "none";
+    document.getElementById("atmCardEjectStage").style.display = "none";
+    document.getElementById("atmPinStage").style.display = "block";
+    document.getElementById("atmPinInput").value = "";
+    document.getElementById("atmPinError").style.display = "none";
+    document.getElementById("atmPinInput").focus();
+}
+
+function verifyAtmPin() {
+    const inputPin = document.getElementById("atmPinInput").value;
+    const correctPin = data.cardConfig.pin || "1234";
+    
+    if (inputPin === correctPin) {
+        document.getElementById("atmPinStage").style.display = "none";
+        document.getElementById("atmSetupStage").style.display = "block";
+    } else {
+        document.getElementById("atmPinError").style.display = "block";
+        document.getElementById("atmPinError").innerText = translations[data.lang].pinError;
+        document.getElementById("atmPinInput").value = "";
+    }
+}
+
+function executeFinalTransaction() {
+    const t = translations[data.lang];
+    const now = new Date();
+    const dateStr = now.toLocaleDateString() + " " + now.toLocaleTimeString();
+
+    if (atmMode === "deposit") {
+        data.balance += totalTargetAmount;
+        data.history.unshift({
+            id: Date.now() + Math.random(),
+            type: "deposit",
+            text: t.histDeposit,
+            amount: totalTargetAmount,
+            date: dateStr
+        });
+        processNotification(`${t.ntfDeposit}${totalTargetAmount} €`);
+    } else {
+        data.balance -= totalTargetAmount;
+        data.history.unshift({
+            id: Date.now() + Math.random(),
+            type: "withdraw",
+            text: pendingReason ? `${t.histWithdrawReason}${pendingReason}` : t.histWithdrawDefault,
+            amount: totalTargetAmount,
+            date: dateStr
+        });
+        const details = pendingReason ? `${t.ntfWithdrawFor}"${pendingReason}"` : "";
+        processNotification(`${t.ntfWithdraw}${totalTargetAmount} €${details}`);
+    }
+    
+    isAiBotRunning = false;
+    closeATM();
+    updateUI();
+}
+
+function updateCardDataFromInputs() {
+    data.cardConfig.bg = document.getElementById("cfgCardColor").value;
+    data.cardConfig.number = document.getElementById("cfgCardNumber").value;
+    data.cardConfig.holder = document.getElementById("cfgCardHolder").value;
+    data.cardConfig.cvv = document.getElementById("cfgCardCvv").value;
+    data.cardConfig.pin = document.getElementById("cfgCardPin").value;
+    
+    syncCardVisuals();
+    save();
+}
+
+function syncCardVisuals() {
+    const c = data.cardConfig;
+    
+    const previews = [
+        document.getElementById("configCardPreview"),
+        document.getElementById("draggableAtmCard")
+    ];
+    
+    previews.forEach(el => {
+        if(el) el.style.background = c.bg;
+    });
+
+    const num1 = document.getElementById("pCardNumber");
+    const num2 = document.getElementById("vCardNumber");
+    const mainMini = document.getElementById("mainCardMiniNumber");
+    
+    if(num1) num1.innerText = c.number || "•••• •••• •••• ••••";
+    if(num2) num2.innerText = c.number || "•••• •••• •••• ••••";
+    if(mainMini) mainMini.innerText = c.number || "•••• •••• •••• ••••";
+
+    const h1 = document.getElementById("pCardHolder");
+    const h2 = document.getElementById("vCardHolder");
+    if(h1) h1.innerText = (c.holder || "JAN KOWALSKI").toUpperCase();
+    if(h2) h2.innerText = (c.holder || "JAN KOWALSKI").toUpperCase();
+
+    const cvv1 = document.getElementById("pCardCvv");
+    const cvv2 = document.getElementById("vCardCvv");
+    if(cvv1) cvv1.innerText = c.cvv || "000";
+    if(cvv2) cvv2.innerText = c.cvv || "000";
+}
+
+function openCardConfigModal() {
+    const c = data.cardConfig;
+    document.getElementById("cfgCardColor").value = c.bg;
+    document.getElementById("cfgCardNumber").value = c.number;
+    document.getElementById("cfgCardHolder").value = c.holder;
+    document.getElementById("cfgCardCvv").value = c.cvv;
+    document.getElementById("cfgCardPin").value = c.pin;
+    syncCardVisuals();
+    document.getElementById("cardConfigModal").style.display = "flex";
+}
+
+function closeCardConfigModal() {
+    document.getElementById("cardConfigModal").style.display = "none";
+}
+
+function deleteOneTransaction(id) {
+    const itemIndex = data.history.findIndex(item => item.id === id);
+    if(itemIndex === -1) return;
+    const item = data.history[itemIndex];
+    if(item.type === "deposit") {
+        data.balance = Math.max(0, data.balance - item.amount);
+    } else if(item.type === "withdraw" || item.type === "buy") {
+        data.balance += item.amount;
+    }
+    data.history.splice(itemIndex, 1);
+    updateUI();
+}
+
+function clearAllTransactions() {
+    data.history = [];
+    updateUI();
+}
+
+function clearAllNotifications() {
+    data.notificationsLog = [];
+    updateUI();
+}
+
+function processNotification(message) {
+    if(data.notificationChoice === "denied") return;
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+    if(!data.notificationsLog) data.notificationsLog = [];
+    const newNtf = { id: Date.now() + Math.random(), text: message, time: timeStr };
+    data.notificationsLog.unshift(newNtf);
+
+    const container = document.getElementById("toastContainer");
+    if(container) {
+        const toast = document.createElement("div");
+        toast.className = "in-app-toast";
+        const headerName = translations[data.lang].bannerHeaderName;
+        toast.innerHTML = `
+            <div style="font-size: 20px;">🔔</div>
+            <div style="flex: 1; font-size: 12px; font-weight: 700; color: #1e293b;">
+                <div style="font-size: 9px; color: #06b6d4; text-transform: uppercase;">${headerName}</div>
+                <div>${message}</div>
+            </div>
+        `;
+        toast.onclick = () => toast.remove();
+        container.appendChild(toast);
+        setTimeout(() => toast.classList.add("show"), 50);
+        setTimeout(() => { if(toast.parentNode) toast.remove(); }, 4000);
+    }
+    renderAppNotifications();
+    save();
+}
+
+function triggerNotificationTest() {
+    const t = translations[data.lang];
+    processNotification(t.testSuccessMsg);
+    document.getElementById("testNtfModal").style.display = "flex";
+}
+
+function closeTestNtfModal() { document.getElementById("testNtfModal").style.display = "none"; }
+
+function switchTab(tab) {
+    activeTab = tab;
+    const transBtn = document.getElementById("tabTransBtn");
+    const notifBtn = document.getElementById("tabNotifBtn");
+    
+    const transView = document.getElementById("tabTransactionsView");
+    const notifView = document.getElementById("tabNotificationsView");
+
+    transBtn.classList.remove("active");
+    notifBtn.classList.remove("active");
+    
+    transView.style.display = "none";
+    notifView.style.display = "none";
+
+    if(tab === "trans") {
+        transBtn.classList.add("active");
+        transView.style.display = "block";
+    } else if(tab === "notif") {
+        notifBtn.classList.add("active");
+        notifView.style.display = "block";
+    }
+}
+
+function toggleNotificationsManually() {
+    data.notificationChoice = (data.notificationChoice === "granted") ? "denied" : "granted";
+    save();
+    updateStatusBadge();
+}
+
+function updateStatusBadge() {
+    const badge = document.getElementById("ntfStatusBadge");
+    const textEl = document.getElementById("ntfStatusText");
+    const pluskaEl = document.getElementById("ntfStatusPluska");
+    const t = translations[data.lang];
+    
+    if (data.notificationChoice === "granted") {
+        textEl.innerText = t.statusActive; pluskaEl.innerText = "🟢";
+        badge.style.background = "#dcfce7"; badge.style.borderColor = "#86efac"; badge.style.color = "#166534";
+    } else {
+        textEl.innerText = t.statusDisabled; pluskaEl.innerText = "🔴";
+        badge.style.background = "#fee2e2"; badge.style.borderColor = "#fca5a5"; badge.style.color = "#991b1b";
+    }
+}
+
+function save(){ localStorage.setItem("bubbleGardenFullInterReal",JSON.stringify(data)); }
+
+function load(){
+    const stored=localStorage.getItem("bubbleGardenFullInterReal");
+    if(stored){
+        const parsed = JSON.parse(stored);
+        if(!parsed.cardConfig) {
+            parsed.cardConfig = {
+                bg: "linear-gradient(135deg, #1e293b, #0f172a, #475569)",
+                number: "4321 8888 9999 7777",
+                holder: "JAN KOWALSKI",
+                cvv: "789",
+                pin: "1234"
+            };
+        }
+        data = parsed;
+        if(!data.notificationsLog) data.notificationsLog = [];
+    }
+}
+
+function resetApp(){ localStorage.removeItem("bubbleGardenFullInterReal"); location.reload(); }
+
+function setLanguageFirstTime(langCode) {
+    data.lang = langCode;
+    data.hasChosenLangBefore = true; 
+    document.getElementById("firstTimeLangModal").style.display = "none";
+    updateUI();
+}
+
+function checkFirstTimeLanguagePrompt() {
+    if (!data.hasChosenLangBefore) {
+        document.getElementById("firstTimeLangModal").style.display = "flex";
+    } else {
+        document.getElementById("firstTimeLangModal").style.display = "none";
+    }
+}
+
+function updateUI(){
+    const t = translations[data.lang];
+    
+    document.getElementById("appTitle").innerText = t.appTitle;
+    document.getElementById("appSubtitle").innerText = t.appSubtitle;
+    document.getElementById("freeFundsLabel").innerText = t.freeFunds;
+    document.getElementById("withGoalsLabel").innerText = t.withGoals;
+    document.getElementById("depositBtn").innerText = t.deposit;
+    document.getElementById("withdrawBtn").innerText = t.withdraw;
+    document.getElementById("gardenWaterLabel").innerText = t.gardenWater;
+    document.getElementById("waterPlantsLabel").innerText = t.waterPlants;
+    document.getElementById("savingsGoalsLabel").innerText = t.savingsGoals;
+    document.getElementById("newGoalBtn").innerText = t.newGoal;
+    document.getElementById("yourGardenLabel").innerText = t.yourGarden;
+    document.getElementById("textTabTrans").innerText = t.tabTrans;
+    document.getElementById("textTabNotif").innerText = t.tabNotif;
+    document.getElementById("savedAlertsLabel").innerText = t.savedAlerts;
+    document.getElementById("savedTransLabel").innerText = t.savedTrans;
+    document.getElementById("clearAllNtfBtn").innerText = t.clearAllBtn;
+    document.getElementById("clearAllTransBtn").innerText = t.clearAllBtn;
+    document.getElementById("testNtfBtn").innerText = t.testBtn;
+    
+    document.getElementById("testModalTitle").innerText = t.testModalTitle;
+    document.getElementById("testModalDesc").innerText = t.testModalDesc;
+    document.getElementById("testModalCloseBtn").innerText = t.confirm;
+
+    document.getElementById("atmTitle").innerText = t.atmTitleText;
+    document.getElementById("atmCancelBtn").innerText = t.cancel;
+    document.getElementById("atmConfirmBtn").innerText = t.confirm;
+    document.getElementById("atmAmount").placeholder = t.atmAmountPlh;
+    document.getElementById("atmReason").placeholder = t.atmReasonPlh;
+    document.getElementById("aiBotBtn").innerText = t.aiBotBtnText;
+    document.getElementById("atmAbortBtn").innerText = t.atmAbortBtnText;
+
+    document.getElementById("newGoalTitle").innerText = t.newGoalTitle;
+    document.getElementById("goalName").placeholder = t.goalNamePlh;
+    document.getElementById("goalTarget").placeholder = t.goalTargetPlh;
+    document.getElementById("createGoalBtn").innerText = t.createGoalBtn;
+    document.getElementById("historyTitle").innerText = t.historyTitle;
+    document.getElementById("langModalTitle").innerText = t.langModalTitle;
+    document.getElementById("langCloseBtn").innerText = t.langCloseBtn;
+    
+    document.getElementById("balanceText").innerText = data.balance;
+    
+    let totalDepositedToGoals = data.goals.reduce((sum, g) => sum + (g.current || 0), 0);
+    document.getElementById("balanceWithGoalsText").innerText = data.balance - totalDepositedToGoals;
+
+    document.getElementById("waterText").innerText = data.water;
+
+    document.getElementById("atmCardScreenStatus").innerText = t.atmCardScrStatus;
+    document.getElementById("atmCardScreenDesc").innerText = t.atmCardScrDesc;
+    document.getElementById("atmCardInstructionText").innerText = t.atmCardInstText;
+    document.getElementById("atmCardCancelBtn").innerText = t.cancel;
+
+    document.getElementById("mainCardTitle").innerText = t.mainCardTitle;
+    document.getElementById("mainCardSettingsBtn").innerText = t.mainCardSettingsBtn;
+    document.getElementById("slotInsertLabel").innerText = t.slotInsertLabel;
+    document.getElementById("nfcHoldLabel").innerText = t.nfcHoldLabel;
+    document.getElementById("ejectCardHeader").innerText = t.ejectCardHeader;
+    document.getElementById("atmEjectScreenDesc").innerText = t.atmEjectScreenDesc;
+    document.getElementById("pullCardLabel").innerText = t.pullCardLabel;
+    document.getElementById("enterPinHeader").innerText = t.enterPinHeader;
+    document.getElementById("enterPinSubheader").innerText = t.enterPinSubheader;
+    document.getElementById("pinCancelBtn").innerText = t.cancel;
+    document.getElementById("pinConfirmBtn").innerText = t.pinConfirmBtn;
+    document.getElementById("ultraFastBtn").innerText = t.ultraFastBtn;
+    document.getElementById("slotNameLabel").innerText = t.slotNameLabel;
+
+    document.getElementById("vipPanelTitle").innerText = t.vipPanelTitle;
+    document.getElementById("lblCardColor").innerText = t.lblCardColor;
+    document.getElementById("lblCardNumber").innerText = t.lblCardNumber;
+    document.getElementById("lblCardHolder").innerText = t.lblCardHolder;
+    document.getElementById("lblCardCvv").innerText = t.lblCardCvv;
+    document.getElementById("lblCardPin").innerText = t.lblCardPin;
+    document.getElementById("saveCardBtn").innerText = t.saveCardBtn;
+
+    const colorSelect = document.getElementById("cfgCardColor");
+    colorSelect.innerHTML = "";
+    t.cardColors.forEach(c => {
+        const opt = document.createElement("option");
+        opt.value = c.val;
+        opt.innerText = c.text;
+        colorSelect.appendChild(opt);
+    });
+
+    updateStatusBadge();
+    renderLangSelect();
+    renderGoals();
+    renderGarden();
+    renderHistory();
+    renderAppNotifications();
+    syncCardVisuals();
+    save();
+}
+
+function openATM(type){
+    const t = translations[data.lang];
+    if (type === "withdraw" && data.balance <= 0) {
+        alert(t.alertNoFunds);
+        return;
+    }
+    atmMode=type;
+    resetAtmStage();
+    document.getElementById("atmModal").style.display="flex";
+}
+function closeATM(){ isAiBotRunning = false; document.getElementById("atmModal").style.display="none"; }
+function openLangModal(){ document.getElementById("langModal").style.display="flex"; }
+function closeLangModal(){ document.getElementById("langModal").style.display="none"; }
+function changeLanguage(langCode){ data.lang = langCode; updateUI(); }
+
+function renderLangSelect(){
+    const select = document.getElementById("langSelect");
+    const t = translations[data.lang];
+    select.innerHTML = `
+        <option value="pl" ${data.lang==='pl'?'selected':''}>${t.langNames.pl}</option>
+        <option value="en" ${data.lang==='en'?'selected':''}>${t.langNames.en}</option>
+        <option value="de" ${data.lang==='de'?'selected':''}>${t.langNames.de}</option>
+    `;
+}
+
+function openGoalModal(){ document.getElementById("goalModal").style.display="flex"; }
+function closeGoalModal(){ document.getElementById("goalModal").style.display="none"; }
+
+function createGoal(){
+    const name = document.getElementById("goalName").value;
+    const target = parseFloat(document.getElementById("goalTarget").value.replace(',', '.'));
+    const t = translations[data.lang];
+    if(!name || isNaN(target) || target <= 0) return;
+    
+    data.goals.push({
+        id: Date.now() + Math.random(),
+        name: name,
+        target: target,
+        current: 0
+    });
+    
+    processNotification(`${t.ntfNewGoal}"${name}" (${target} €)`);
+    document.getElementById("goalName").value = "";
+    document.getElementById("goalTarget").value = "";
+    closeGoalModal();
+    updateUI();
+}
+
+function deleteGoal(id) {
+    const idx = data.goals.findIndex(g => g.id === id);
+    if(idx !== -1) {
+        data.goals.splice(idx, 1);
+        updateUI();
+    }
+}
+
+function addFundsToGoal(id) {
+    const t = translations[data.lang];
+    const goal = data.goals.find(g => g.id === id);
+    if(!goal) return;
+
+    const valStr = prompt(t.promptAddGoal);
+    if(!valStr) return;
+    const val = parseFloat(valStr.replace(',', '.'));
+    if(isNaN(val) || val <= 0) return;
+
+    if (goal.current + val > goal.target) {
+        alert(t.alertGoalOverflow);
+        return;
+    }
+
+    goal.current += val;
+
+    processNotification(`${t.ntfGoalAdded}"${goal.name}": +${val} €`);
+    updateUI();
+}
+
+function buyGoalDream(id) {
+    const t = translations[data.lang];
+    const goal = data.goals.find(g => g.id === id);
+    if(!goal) return;
+
+    if(goal.current < goal.target) {
+        alert(t.alertLowSavings);
+        return;
+    }
+
+    if (data.balance < goal.target) {
+        alert(t.alertNoMoney);
+        return;
+    }
+
+    data.balance -= goal.target;
+
+    const now = new Date();
+    data.history.unshift({
+        id: Date.now() + Math.random(),
+        type: "buy",
+        text: `${t.histBuy}"${goal.name}" 🎉`,
+        amount: goal.target,
+        date: now.toLocaleDateString() + " " + now.toLocaleTimeString()
+    });
+
+    processNotification(`${t.ntfGoalSuccess}"${goal.name}" (${goal.target} €)`);
+    deleteGoal(id);
+}
+
+function renderGoals() {
+    const wrap = document.getElementById("goalsWrap");
+    const t = translations[data.lang];
+    wrap.innerHTML = "";
+
+    if (!data.goals || data.goals.length === 0) {
+        wrap.innerHTML = `<div style="grid-column: span 2; text-align:center; font-size:12px; color:#94a3b8; font-weight:700; padding:15px; background:white; border-radius:18px; border:1px dashed #cbd5e1;">${t.noGoals}</div>`;
+        return;
+    }
+
+    data.goals.forEach(g => {
+        let pct = 0;
+        if (g.target > 0) {
+            pct = Math.round((g.current / g.target) * 100);
+        }
+        
+        let pctDisplay = isFinite(pct) ? `${pct}%` : "∞%";
+
+        const card = document.createElement("div");
+        card.className = "goalCard";
+        card.innerHTML = `
+            <div class="goal-header">
+                <div class="goal-title">${g.name}</div>
+                <button onclick="deleteGoal(${g.id})" style="border:none; background:none; color:#ef4444; font-weight:900; cursor:pointer; font-size:14px; padding:0 0 0 4px; line-height:1;">✕</button>
+            </div>
+            <div class="goal-circle-container">
+                <div class="goal-orb orb1"></div>
+                <div class="goal-orb orb2"></div>
+                <div class="goal-orb orb3"></div>
+                <div class="goal-orb orb4"></div>
+                <div class="goal-percent-text">${pctDisplay}</div>
+            </div>
+            <div>
+                <div style="font-size:11px; font-weight:800; color:#64748b; text-align:center; margin-bottom:8px;">${g.current} / ${g.target} €</div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px;">
+                    <button onclick="addFundsToGoal(${g.id})" class="mainBtn" style="background:#06b6d4; color:white; padding:6px; font-size:10px; border-radius:12px;">${t.goalBtnAdd}</button>
+                    <button onclick="buyGoalDream(${g.id})" class="mainBtn" style="background:#10b981; color:white; padding:6px; font-size:10px; border-radius:12px;">${t.goalBtnBuy}</button>
+                </div>
+            </div>
+        `;
+        wrap.appendChild(card);
+    });
+}
+
+function renderGarden() {
+    const wrap = document.getElementById("gardenWrap");
+    const t = translations[data.lang];
+    wrap.innerHTML = "";
+
+    data.garden.forEach((plot, index) => {
+        const slot = document.createElement("div");
+        slot.className = "slot";
+
+        if (!plot.planted) {
+            slot.innerHTML = `
+                <div style="font-size:32px; opacity:0.3;">🌱</div>
+                <div style="font-size:11px; font-weight:800; color:#94a3b8; margin-top:6px;">${t.emptySoil}</div>
+                <button onclick="plantSeed(${index})" class="mainBtn" style="background:#10b981; color:white; padding:6px 12px; font-size:10px; margin-top:10px;">${t.plantPlant}</button>
+            `;
+        } else {
+            let stageText = `${t.stageLabel}${plot.stage}/3`;
+            let isReady = plot.stage >= 3;
+
+            slot.innerHTML = `
+                <div style="font-size:38px;">${plot.plantEmoji}</div>
+                <div style="font-size:10px; font-weight:800; color:#475569; margin-top:4px;">${plot.plantName}</div>
+                <div style="font-size:9px; font-weight:700; color:#0284c7; margin-top:2px;">${stageText}</div>
+                ${isReady ? 
+                    `<button onclick="harvestPlant(${index})" class="mainBtn" style="background:#f59e0b; color:white; padding:6px 12px; font-size:10px; margin-top:8px;">🌾 ZBIERZ</button>` :
+                    `<button onclick="waterPlant(${index})" class="mainBtn" style="background:#0284c7; color:white; padding:6px 12px; font-size:10px; margin-top:8px;">${t.waterPlantBtn}</button>`
+                }
+            `;
+        }
+        wrap.appendChild(slot);
+    });
+}
+
+function plantSeed(index) {
+    const t = translations[data.lang];
+    if (data.inventory.length === 0) {
+        alert(t.alertNoSeeds);
+        return;
+    }
+    const seed = data.inventory.shift();
+    const plantNameIndex = Math.floor(Math.random() * t.plants.length);
+    
+    data.garden[index] = {
+        planted: true,
+        plantEmoji: seed,
+        plantName: t.plants[plantNameIndex],
+        stage: 1
+    };
+    updateUI();
+}
+
+function waterPlant(index) {
+    const t = translations[data.lang];
+    if (data.water <= 0) {
+        alert(t.alertNoWater);
+        return;
+    }
+    data.water -= 1;
+    data.garden[index].stage += 1;
+    updateUI();
+}
+
+function harvestPlant(index) {
+    const t = translations[data.lang];
+    const harvested = data.garden[index];
+    
+    data.inventory.push(harvested.plantEmoji);
+    data.water += 3;
+    data.garden[index] = { planted: false };
+    
+    processNotification(`${t.ntfHarvest} (+3 💧)`);
+    updateUI();
+}
+
+function renderHistory() {
+    const wrap = document.getElementById("historyWrap");
+    const t = translations[data.lang];
+    wrap.innerHTML = "";
+
+    if (!data.history || data.history.length === 0) {
+        wrap.innerHTML = `<div style="text-align:center; font-size:12px; color:#94a3b8; font-weight:700; padding:20px;">${t.noHistory}</div>`;
+        return;
+    }
+
+    data.history.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "histItem";
+        
+        let color = item.type === "deposit" ? "#10b981" : "#ef4444";
+        let prefix = item.type === "deposit" ? "+" : "-";
+
+        div.innerHTML = `
+            <div>
+                <div style="font-size:12px; font-weight:800; color:#1e293b;">${item.text}</div>
+                <div style="font-size:9px; color:#94a3b8; margin-top:2px;">${item.date}</div>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+                <div style="font-size:13px; font-weight:900; color:${color};">${prefix}${item.amount} €</div>
+                <button onclick="deleteOneTransaction(${item.id})" style="border:none; background:none; color:#cbd5e1; font-weight:900; cursor:pointer;">✕</button>
+            </div>
+        `;
+        wrap.appendChild(div);
+    });
+}
+
+function renderAppNotifications() {
+    const wrap = document.getElementById("appNotificationsWrap");
+    const t = translations[data.lang];
+    if(!wrap) return;
+    wrap.innerHTML = "";
+
+    if(!data.notificationsLog || data.notificationsLog.length === 0) {
+        wrap.innerHTML = `<div style="text-align:center; font-size:12px; color:#94a3b8; font-weight:700; padding:20px;">${t.noNotifications}</div>`;
+        return;
+    }
+
+    data.notificationsLog.forEach(ntf => {
+        const item = document.createElement("div");
+        item.className = "histItem";
+        item.style.background = "#f8fafc";
+        item.innerHTML = `
+            <div style="display:flex; gap:10px; align-items:center;">
+                <div style="font-size:16px;">🔔</div>
+                <div>
+                    <div style="font-size:11px; font-weight:800; color:#334155;">${ntf.text}</div>
+                    <div style="font-size:9px; color:#94a3b8;">${ntf.time}</div>
+                </div>
+            </div>
+        `;
+        wrap.appendChild(item);
+    });
+}
+
+function openHistory() {
+    switchTab('trans');
+    document.getElementById("historyModal").style.display = "flex";
+}
+
+function closeHistory() {
+    document.getElementById("historyModal").style.display = "none";
+}
+
+load();
+checkFirstTimeLanguagePrompt();
+updateUI();
+</script>
+
+</body>
+</html>
